@@ -62,39 +62,127 @@ const look = (o) => ({ skin: '#f2c6a8', hairHi: '#5a4a6e', top: SHIRT, topSh: SH
 
 /** the squad: whoever you pick is you, the rest are around school */
 const FRIENDS = [
-  { name: 'Ghanim', role: 'the planner', look: look({ hair: '#1e1a28', style: 'parted', glasses: true, skin: '#f0c4a4' }),
-    line: 'I made a spreadsheet for the pact. You are currently in last place.',
-    hint: ['alya', 'Data point: Alya hates flattery. Be useful, not smooth.'] },
-  { name: 'Ghiffy', role: 'the hype man', look: look({ hair: '#5a3a2a', hairHi: '#8a5a40', style: 'spiky', top: '#e8504f', topSh: '#c03a3a', skin: '#e8b48e' }),
-    line: 'LET’S GOOO! Today’s the day, I can feel it in my bones!',
-    hint: ['kirana', 'Kirana respects people who never give up. Don’t quit, bro!'] },
-  { name: 'Lindan', role: 'the calm one', look: look({ hair: '#2a2230', style: 'short', top: '#6a9a7a', topSh: '#4f7a5f', skin: '#f6cdb2' }),
-    line: 'Relax. A crush is like an exam. Show up, be honest, don’t cheat.',
-    hint: ['alya', 'Alya acts tough, but she’s scared of leaving home. Just listen to her.'] },
-  { name: 'Arkan', role: 'the athlete', look: look({ hair: '#141018', style: 'buzz', top: '#2f7fd8', topSh: '#2160aa', skin: '#d9a07a' }),
+  { name: 'Ghanim', fates: ['built a dating app for the squad. It matched him with someone ✓', 'is still debugging his feelings. Estimated fix: college'], role: 'the coder', look: look({ hair: '#1e1a28', style: 'parted', glasses: true, laptop: true, skin: '#f0c4a4' }),
+    line: 'I wrote a script that tracks the pact. You are currently in last place.',
+    hint: ['alya', 'Debug tip: Alya hates flattery. Be useful, not smooth.'],
+    end: {
+      option: 'Show her a website you coded: “Will you go out with me?” [YES] [NO]',
+      reply: '…The NO button runs away every time I try to click it. …Fine. Yes. YES.',
+      b: 'Did you really code a whole website just to ask me out?',
+      a: 'Three nights. Zero bugs. …Okay, one bug.',
+      epilogue: 'Ghanim shipped the best project of his life. Uptime: forever.',
+      bakso: 'Ghanim’s confession website crashed in production. He’s fixing the bug at the bakso stall. His treat.',
+    } },
+  { name: 'Ghiffy', fates: ['found a Player 2 at the prom ✓', 'is speedrunning college instead. Current record: pending'], role: 'the gamer', look: look({ hair: '#5a3a2a', hairHi: '#8a5a40', style: 'spiky', headphones: '#4ad07a', top: '#e8504f', topSh: '#c03a3a', skin: '#e8b48e' }),
+    line: 'Five days left? That’s like… one boss fight per day. Easy.',
+    hint: ['kirana', 'Kirana respects people who never rage-quit. Keep going, bro!'],
+    end: {
+      option: 'Hand her a controller: “Player 2… want to join?”',
+      reply: '…Player 2 has joined the game.',
+      b: 'So am I your Player 2 now?',
+      a: 'Co-op mode. Permanently. No respawns needed.',
+      epilogue: 'Achievement unlocked: Crush Before College (only 0.1% of players get this).',
+      bakso: 'GAME OVER. Continue? Ghiffy bought a continue — in bakso, for the whole squad.',
+    } },
+  { name: 'Lindan', fates: ['predicted his own crush three days early ✓', 'says the forecast for love is “cloudy, clearing by college”'], role: 'the meteorologist', look: look({ hair: '#2a2230', style: 'short', top: '#6a9a7a', topSh: '#4f7a5f', skin: '#f6cdb2' }),
+    line: 'Today’s forecast: sunny, light wind, 80% chance of someone in our squad blushing.',
+    hint: ['alya', 'Alya acts tough, but there’s a storm inside. She’s scared of leaving home. Just listen.'],
+    end: {
+      option: '“Tomorrow’s forecast: clear skies, and a 100% chance I still like you.”',
+      reply: '…Did you just do a weather report at me? …Okay. That was cute.',
+      b: 'So, weatherman. What’s the forecast for us?',
+      a: 'Clear skies. Light winds. 100% chance of shooting stars.',
+      epilogue: 'Lindan’s forecast was right again. Clear skies, all the way to college.',
+      bakso: 'Lindan forecast sunshine. It poured. He’s buying the bakso, umbrellas included.',
+    } },
+  { name: 'Arkan', fates: ['asked someone out at the finish line. She said yes ✓', 'is training for love. Day 1 of 365'], role: 'the athlete', look: look({ hair: '#141018', style: 'buzz', top: '#2f7fd8', topSh: '#2160aa', skin: '#d9a07a' }),
     line: 'Want to run laps with me? …No? Your loss. Cardio is love.',
-    hint: ['kirana', 'Kirana hurt her knee before the last meet. Be kind, not a coach.'] },
-  { name: 'Dyas', role: 'the romantic', look: look({ hair: '#2b2236', style: 'spiky', top: '#3a5aa8', topSh: '#2a3f7c', skin: '#f6cdb2' }),
-    line: 'Find someone to watch the sunset with. Trust me. It works.',
-    hint: ['sekar', 'Sekar likes quiet. Don’t try to fill the silence with jokes.'] },
-  { name: 'Zubair', role: 'the gamer', look: look({ hair: '#1e1a28', style: 'messy', headphones: '#ff5f96', top: '#7a7f90', topSh: '#5f6474', skin: '#e8b48e' }),
-    line: 'Romance is a side quest with no save points. Choose wisely.',
-    hint: ['rania', 'Rania wants honest reviews of her food. Like a game critic, but nicer.'] },
-  { name: 'Ahza', role: 'the photographer', look: look({ hair: '#3a2a2a', hairHi: '#6a4a44', style: 'curly', camera: true, skin: '#f0c4a4' }),
+    hint: ['kirana', 'Kirana hurt her knee before the last meet. Be kind, not a coach.'],
+    end: {
+      option: 'Sprint across the courtyard to her: “I ran here. Mostly so I could say this.”',
+      reply: 'You’re completely out of breath. …Say it, then. …Yes.',
+      b: 'Do you ever stop running?',
+      a: 'Only for you. This is my favourite finish line.',
+      epilogue: 'Arkan crossed the finish line first. The prize was worth it.',
+      bakso: 'Arkan didn’t catch this one. Cool-down lap: straight to the bakso stall. On him.',
+    } },
+  { name: 'Dyas', fates: ['scored the winning goal and pointed at the stands. Someone pointed back ✓', 'is saving his best goal for college'], role: 'the footballer', look: look({ hair: '#2b2236', style: 'spiky', top: '#2f9a5a', topSh: '#237a46', number: '10', skin: '#f6cdb2' }),
+    line: 'Last match of senior year tomorrow. Win or lose, I’m pointing at the stands.',
+    hint: ['sekar', 'Sekar likes quiet. Don’t try to fill the silence with jokes. Pass, don’t shoot.'],
+    end: {
+      option: 'Juggle a football twenty times, catch it, and hand it to her: “That one’s for you.”',
+      reply: '…Show-off. …Do it again. …And yes.',
+      b: 'You scored last match and pointed at me. Everyone saw.',
+      a: 'That was the plan. Best assist of my life.',
+      epilogue: 'Dyas scored the winning goal of senior year. Off the pitch.',
+      bakso: 'Dyas missed the penalty this time. Extra time is in college. Bakso’s on him.',
+    } },
+  { name: 'Zubair', fates: ['met someone who has watched every episode he has ✓', 'is waiting for season two'], role: 'the anime fan', look: look({ hair: '#1e1a28', style: 'messy', headphones: '#ff5f96', top: '#7a7f90', topSh: '#5f6474', skin: '#e8b48e' }),
+    line: 'This week is literally the last arc of a school anime. I hope we get a good ending.',
+    hint: ['rania', 'Rania wants honest reviews of her food. Like rating an episode, but nicer.'],
+    end: {
+      option: 'Recite the confession from your favourite anime, word for word.',
+      reply: '…That’s from episode 12, isn’t it? …I watched it too. …Yes.',
+      b: 'This feels like the last episode of an anime.',
+      a: 'Then let’s make it a season finale. Season two: college.',
+      epilogue: 'Zubair got his anime ending. Season two confirmed.',
+      bakso: 'No anime ending yet. Zubair says season two will be better. Bakso first, his treat.',
+    } },
+  { name: 'Ahza', fates: ['got a photo, and a phone number ✓', 'took 400 photos of everyone else’s crushes'], role: 'the photographer', look: look({ hair: '#3a2a2a', hairHi: '#6a4a44', style: 'curly', camera: true, skin: '#f0c4a4' }),
     line: 'Smile! …That’s the most nervous smile I’ve ever photographed.',
-    hint: ['sekar', 'Sekar is drawing everyone in our class. If she asks to draw you, say yes.'] },
-  { name: 'Aboi', role: 'the joker', look: look({ hair: '#1e1a28', style: 'cap', cap: '#ffcf3f', top: '#f08a3a', topSh: '#c86a28', skin: '#d9a07a' }),
+    hint: ['sekar', 'Sekar is drawing everyone in our class. If she asks to draw you, say yes.'],
+    end: {
+      option: 'Show her a photo you took weeks ago: her, laughing.',
+      reply: '…You kept this? …I look happy here. Because you were there.',
+      b: 'Are you taking a picture right now?',
+      a: 'Of the sky. …You’re in it. Lucky shot.',
+      epilogue: 'Ahza’s best photo of senior year: the two of them, under the cherry tree.',
+      bakso: 'Ahza got a great photo of the squad eating bakso. He paid for every bowl in it.',
+    } },
+  { name: 'Aboi', fates: ['made someone laugh so hard she said yes ✓', 'confessed to the vending machine again. It said “sold out”'], role: 'the joker', look: look({ hair: '#1e1a28', style: 'cap', cap: '#ffcf3f', top: '#f08a3a', topSh: '#c86a28', skin: '#d9a07a' }),
     line: 'I confessed to three people today. One of them was the vending machine.',
-    hint: ['rania', 'Whatever you do, don’t insult Rania’s bakso. She has a ladle.'] },
-  { name: 'Qai', role: 'the sleepy one', look: look({ hair: '#2a2236', style: 'messy', sleepy: true, top: '#7a5bb5', topSh: '#5f4590', skin: '#f6cdb2' }),
+    hint: ['rania', 'Whatever you do, don’t insult Rania’s bakso. She has a ladle.'],
+    end: {
+      option: '“Are you a vending machine? Because I’d confess to you four times.”',
+      reply: '…That is the worst line I have ever heard. …Yes.',
+      b: 'Tell me a joke.',
+      a: 'I got a crush before college. …That’s not the joke. That’s the punchline.',
+      epilogue: 'Aboi’s worst joke worked. Scientists are baffled.',
+      bakso: 'Aboi’s joke didn’t land. The squad laughed anyway, then ordered extra bakso on him.',
+    } },
+  { name: 'Qai', fates: ['woke up just in time for his crush ✓', 'slept through the whole pact. Peacefully'], role: 'the sleepy one', look: look({ hair: '#2a2236', style: 'messy', sleepy: true, top: '#7a5bb5', topSh: '#5f4590', skin: '#f6cdb2' }),
     line: 'Zzz… huh? Graduation? Wake me up when it’s college.',
-    hint: ['kirana', '…Kirana got some big news… mumble… scholarship… zzz…'] },
-  { name: 'Hamzah', role: 'the foodie', look: look({ hair: '#1e1a28', style: 'short', top: '#4f8a46', topSh: '#3a6a34', skin: '#e8b48e' }),
+    hint: ['kirana', '…Kirana got some big news… mumble… scholarship… zzz…'],
+    end: {
+      option: '(Yawn.) “I stayed awake all week. Just so I wouldn’t miss this.”',
+      reply: '…Qai, awake for a whole week? That’s the most romantic thing I’ve ever heard. Yes.',
+      b: 'You’re not falling asleep on my shoulder, are you?',
+      a: '…Five more minutes. Best nap spot in the world.',
+      epilogue: 'Qai stayed awake for the most important moment. Then napped, very happily.',
+      bakso: 'Qai slept through his own confession. Woke up at the bakso stall. Somehow, it’s his bill.',
+    } },
+  { name: 'Hamzah', fates: ['bonded with someone over cheese bakso ✓', 'is in a committed relationship with bakso'], role: 'the foodie', look: look({ hair: '#1e1a28', style: 'short', top: '#4f8a46', topSh: '#3a6a34', skin: '#e8b48e' }),
     line: 'Rania’s cheese bakso is a masterpiece. Tell her I said so.',
-    hint: ['rania', 'If Rania makes you a bento, that means something. Trust me. I know bentos.'] },
-  { name: 'Nizam', role: 'the musician', look: look({ hair: '#2a2230', style: 'beanie', beanie: '#3a3050', top: '#2a2a38', topSh: '#1c1c28', skin: '#f0c4a4' }),
+    hint: ['rania', 'If Rania makes you a bento, that means something. Trust me. I know bentos.'],
+    end: {
+      option: 'Give her your last meatball. (The biggest sacrifice a foodie can make.)',
+      reply: '…Hamzah, giving away food? This is serious. …Okay. Yes.',
+      b: 'You gave me your last meatball today.',
+      a: 'I’d give you every meatball. That’s how I know.',
+      epilogue: 'Hamzah found something better than bakso. (Don’t tell the bakso.)',
+      bakso: 'Hamzah didn’t get the crush, but he did get bakso. A lot of bakso. Honestly? A win.',
+    } },
+  { name: 'Nizam', fates: ['played his song at prom. Someone sang along ✓', 'is still writing the second verse'], role: 'the musician', look: look({ hair: '#2a2230', style: 'beanie', beanie: '#3a3050', top: '#2a2a38', topSh: '#1c1c28', skin: '#f0c4a4' }),
     line: 'I’m writing a song for graduation. It’s in D major. D for Dramatic.',
-    hint: ['alya', 'Alya feeds a stray cat behind the library. If you find out, keep it secret.'] },
+    hint: ['alya', 'Alya feeds a stray cat behind the library. If you find out, keep it secret.'],
+    end: {
+      option: 'Play her the graduation song you wrote. It’s about her.',
+      reply: '…D major. D for… “Dramatic”? …It was beautiful. Yes.',
+      b: 'Will you play that song again?',
+      a: 'Every time we come back here. It’s ours now.',
+      epilogue: 'Nizam’s graduation song topped the class charts. Everyone knows who it’s about.',
+      bakso: 'Nizam’s song needs one more verse. He’s writing it at the bakso stall. His treat.',
+    } },
 ];
 
 /** the four classmates who might become your crush */
@@ -445,6 +533,17 @@ function chibi(c, o) {
     c.beginPath(); c.moveTo(-8, -62 - bob); c.lineTo(8, -44 - bob); c.stroke();
     c.fillStyle = '#2a2a38'; c.fillRect(3, -48 - bob, 12, 8);
     c.fillStyle = '#9fd0ff'; c.beginPath(); c.arc(12, -44 - bob, 2.5, 0, Math.PI * 2); c.fill();
+  }
+  if (L.number) {
+    c.fillStyle = '#ffffff';
+    c.font = '800 11px sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.save(); c.scale(o.face, 1); c.fillText(L.number, 2 * o.face, -50 - bob); c.restore();
+  }
+  if (L.laptop) {
+    c.fillStyle = '#9aa0b0'; c.beginPath(); c.roundRect(-16, -50 - bob, 22, 15, 2); c.fill();
+    c.fillStyle = '#7fd8ff'; c.beginPath(); c.arc(-5, -43 - bob, 2, 0, Math.PI * 2); c.fill();
   }
   leg(swing * 0.45, L.bottom);
 
@@ -939,7 +1038,8 @@ async function confession(c) {
   const me = state.me.name;
   await say('', `Petals drift down from the cherry tree. ${c.name} turns around.`);
   await say(c.name, `${me}. Your friends said you wanted to tell me something. …Then they ran away.`);
-  const i = await choose(['I like you. I have for a while.', 'Want to get es teh together… every day, in college too?', '(Say nothing. Just hold out your hand.)']);
+  const mine = state.me.end;
+  const i = await choose([mine.option, 'I like you. I have for a while.', '(Say nothing. Just hold out your hand.)']);
   if (state.aff[c.id] < 4) {
     await say(c.name, `${me}… you’re really sweet. But I feel like I’ve only just met you.`);
     await say(c.name, 'Text me in college? Let’s see what happens.');
@@ -947,8 +1047,8 @@ async function confession(c) {
     await baksoEnd(c);
     return;
   }
-  if (i === 0) await say(c.name, '…Took you long enough. I like you too.');
-  else if (i === 1) await say(c.name, 'Every day? …Okay. But you’re paying.');
+  if (i === 0) await say(c.name, mine.reply);
+  else if (i === 1) await say(c.name, '…Took you long enough. I like you too.');
   else { await say('', `${c.name} looks at your hand for a long moment. Then she takes it.`); await say(c.name, '…Hi.'); }
   await say(other('Ghiffy', 'Aboi'), '(from the bushes) LET’S GOOOOO!');
   await say(c.name, 'Were they there the whole time?!');
@@ -957,7 +1057,6 @@ async function confession(c) {
 }
 
 function results(winner) {
-  const outcomes = ['has a crush ✓ (won’t say who)', 'has a crush ✓', 'is “keeping his options open”', 'fell in love with Rania’s cheese bakso', 'says he’ll find someone in college', 'has a crush ✓ (it’s mutual!)', 'has a crush on graduation itself', 'is still deciding'];
   const r = seeded(state.aff.alya * 7 + state.aff.kirana * 5 + state.aff.sekar * 3 + state.aff.rania + state.me.name.length);
   const ul = $('res-list');
   ul.innerHTML = '';
@@ -967,7 +1066,7 @@ function results(winner) {
   for (const f of FRIENDS) {
     if (f === state.me) continue;
     const li = document.createElement('li');
-    li.innerHTML = `<b>${f.name}</b> ${outcomes[Math.floor(r() * outcomes.length)]}`;
+    li.innerHTML = `<b>${f.name}</b> ${f.fates[r() < 0.6 ? 0 : 1]}`;
     ul.append(li);
   }
 }
@@ -982,8 +1081,8 @@ async function baksoEnd(c) {
   $('res-kana').textContent = 'バクソ・エンド';
   $('res-title').textContent = 'Bakso End';
   $('res-sub').textContent = c
-    ? `${c.name} wants to get to know you first. That’s not a no! But a pact is a pact: tonight, ${state.me.name} treats the whole squad to bakso.`
-    : `No crush before college… The whole squad eats bakso on ${state.me.name}. Extra meatballs.`;
+    ? `${c.name} wants to get to know you first. That’s not a no! But a pact is a pact. ${state.me.end.bakso}`
+    : `No crush before college… ${state.me.end.bakso}`;
   results(null);
   document.body.classList.add('show-results');
   $('results').hidden = false;
@@ -1007,13 +1106,14 @@ function happyEnd(c) {
       names: [state.me.name, c.name],
       looks: { boyHair: L.hair, boyHairHi: L.hairHi, jacket: plain ? '#5a6a9a' : L.top, jacketSh: plain ? '#47557f' : L.topSh, ...c.end },
       gifts: { ribbon: c.id === 'alya' },
+      personal: [state.me.end.b, state.me.end.a],
     });
     fade.classList.remove('on');
     // once the title card has had its moment, show how everyone did
     setTimeout(() => {
       $('res-kana').textContent = '卒業おめでとう！';
       $('res-title').innerHTML = `${state.me.name} <span class="heart">♥</span> ${c.name}`;
-      $('res-sub').textContent = `${state.me.name} got a crush before college. No bakso tonight. (Okay, bakso anyway. To celebrate.)`;
+      $('res-sub').textContent = `${state.me.end.epilogue} No bakso bill tonight. (Okay, bakso anyway. To celebrate.)`;
       results(c);
       document.body.classList.add('show-results');
       $('results').hidden = false;

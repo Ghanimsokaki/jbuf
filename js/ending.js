@@ -13,6 +13,7 @@ let canvas, ctx, fx, song;
 let gifts = {};
 // colours for the two figures (hex); anything missing keeps the default
 let looks = {};
+let personal = null; // [her line, his line] that belong to whoever you played
 const toHex = (r, g, b) => '#' + [r, g, b].map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
 /** the same colour under a night sky */
 function night(h) {
@@ -119,7 +120,8 @@ function buildSubs() {
     [1.0, '', 'The day before graduation. The sun sets over the town one last time.'],
     [6.5, NAME_B, `${NAME_A}… we really made it. Twelve years of school, done.`],
     [12.5, NAME_A, 'Weird. I thought I’d be happy. I just don’t want today to end.'],
-    [18.5, NAME_B, 'Then let’s stay here until the stars come out.'],
+    [17.5, NAME_B, personal ? personal[0] : 'Then let’s stay here until the stars come out.'],
+    ...(personal ? [[20.5, NAME_A, personal[1]]] : []),
     [23.5, '', 'The city lit up below them. Neither of them moved.'],
     [27, NAME_B, 'Look — a shooting star! Quick, make a wish!'],
     [32.5, NAME_A, 'I don’t need one. It already came true.'],
@@ -876,10 +878,11 @@ export function startEnding(opts) {
   ({ canvas, fx, song } = opts);
   gifts = opts.gifts || {};
   looks = opts.looks || {};
+  personal = opts.personal || null;
   if (opts.names) [NAME_A, NAME_B] = opts.names;
   buildAfter();
-  ctx = canvas.getContext('2d');
   buildSubs();
+  ctx = canvas.getContext('2d');
   resize();
   build();
   started = true;

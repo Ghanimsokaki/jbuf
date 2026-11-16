@@ -19,6 +19,11 @@ squad to bakso.
    afternoon, so you only get 10 over the week.
 5. **Friday afternoon:** your top crush waits under the cherry tree. Confess.
    Enough hearts and you get the anime ending; otherwise it's the Bakso End.
+6. **Everyone has their own ending.** Whoever you play gets a personal
+   confession move and their own lines in the ending — Ghanim the coder shows
+   her a website whose NO button runs away, Ghiffy the gamer asks for a Player 2,
+   Lindan the meteorologist gives a forecast, Dyas the footballer juggles a ball
+   for her, and so on. The pact results show how each of the others did.
 
 Controls: `←` `→` (or `A` `D`) to walk, `E` / `Space` / `Enter` to talk and
 continue, `1`–`3` to answer. On phones, use the on-screen buttons and tap the
