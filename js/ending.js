@@ -1,16 +1,28 @@
 /**
- * The ending of Sunset Errand: Dyas and Naswa on the hill as the sun goes
+ * The ending: two people on the hill as the sun goes
  * down, a comet, hand-holding, the title card and fireworks. Painted each
  * frame on a 2D canvas in a cel-shaded anime style. What Dyas brought along
  * (flowers, strawberry milk, Naswa's ribbon) shows up in the scene.
  */
 
-const NAME_A = 'Dyas';
-const NAME_B = 'Naswa';
+let NAME_A = 'Dyas';
+let NAME_B = 'Naswa';
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let canvas, ctx, fx, song;
 let gifts = {};
+// colours for the two figures (hex); anything missing keeps the default
+let looks = {};
+const toHex = (r, g, b) => '#' + [r, g, b].map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+/** the same colour under a night sky */
+function night(h) {
+  const [r, g, b] = hex(h);
+  return toHex(r * 0.28 + 8, g * 0.28 + 8, b * 0.38 + 30);
+}
+function lit(key, day, p, alpha = 1) {
+  const h = looks[key] || day;
+  return mix(h, night(h), p, alpha);
+}
 
 let W = 0, H = 0, U = 1, DPR = 1;
 
@@ -104,23 +116,26 @@ const beats = {
 let SUBS = [];
 function buildSubs() {
   SUBS = [
-    [1.0, '', 'The sun touched the rooftops. For a while, neither of them said anything.'],
-    [6.5, NAME_B, gifts.milk ? 'Strawberry milk tastes better up here. Thank you.' : `${NAME_A}… do you think the sky remembers us?`],
-    [12.5, NAME_A, 'It does. It’s watched me fall for you, one sunset at a time.'],
-    [18.5, NAME_B, gifts.flower ? 'I’m keeping these tulips forever, you know.' : 'Look, the city is waking up.'],
-    [23.5, '', 'The sun went down. The city lit up. Neither of them moved.'],
+    [1.0, '', 'The day before graduation. The sun sets over the town one last time.'],
+    [6.5, NAME_B, `${NAME_A}… we really made it. Twelve years of school, done.`],
+    [12.5, NAME_A, 'Weird. I thought I’d be happy. I just don’t want today to end.'],
+    [18.5, NAME_B, 'Then let’s stay here until the stars come out.'],
+    [23.5, '', 'The city lit up below them. Neither of them moved.'],
     [27, NAME_B, 'Look — a shooting star! Quick, make a wish!'],
-    [32.5, NAME_A, 'I don’t need one. Mine is sitting right here.'],
+    [32.5, NAME_A, 'I don’t need one. It already came true.'],
     [38.2, '', ''],
   ];
 }
-const AFTER = [
-  [NAME_B, `Same hill tomorrow, ${NAME_A}?`],
-  [NAME_A, 'Every tomorrow.'],
-  [NAME_B, 'Of all the skies, this one is my favourite.'],
-  [NAME_A, 'Because you’re in it.'],
-  ['', `${NAME_A} ♥ ${NAME_B} — to be continued, forever.`],
-];
+let AFTER = [];
+function buildAfter() {
+  AFTER = [
+    [NAME_B, `Text me every day in college, ${NAME_A}.`],
+    [NAME_A, 'Every day. And every night.'],
+    [NAME_B, 'Promise we’ll come back to this hill.'],
+    [NAME_A, 'Promise.'],
+    ['', `${NAME_A} ♥ ${NAME_B} — pact complete.`],
+  ];
+}
 
 const subEl = document.getElementById('sub');
 const whoEl = subEl.querySelector('.who');
@@ -469,14 +484,14 @@ function palette(p) {
   return {
     skin: mix('#f3c3a6', '#6a587e', p),
     rim: mix('#ffcf94', '#a9b9ff', p, 0.85),
-    boyHair: mix('#2b2236', '#100d20', p),
-    boyHairHi: mix('#5a4a6e', '#2c2a52', p),
-    jacket: mix('#3a5aa8', '#1a2252', p),
-    jacketSh: mix('#2a3f7c', '#10163a', p),
-    girlHair: mix('#5b2c3a', '#1d0f22', p),
-    girlHairHi: mix('#9a4d5e', '#3c2650', p),
-    cardigan: mix('#f6dbe4', '#4b3e6a', p),
-    cardiganSh: mix('#d9aec0', '#2f2750', p),
+    boyHair: lit('boyHair', '#2b2236', p),
+    boyHairHi: lit('boyHairHi', '#5a4a6e', p),
+    jacket: lit('jacket', '#3a5aa8', p),
+    jacketSh: lit('jacketSh', '#2a3f7c', p),
+    girlHair: lit('girlHair', '#5b2c3a', p),
+    girlHairHi: lit('girlHairHi', '#9a4d5e', p),
+    cardigan: lit('cardigan', '#f6dbe4', p),
+    cardiganSh: lit('cardiganSh', '#d9aec0', p),
     ribbon: mix('#e8304f', '#7c1f44', p),
   };
 }
@@ -586,13 +601,14 @@ function drawNaswa(c, t, hold) {
   ctx.beginPath();
   ctx.moveTo(-21, -18);
   ctx.arc(0, -20, 21, Math.PI, 0, false);
-  ctx.bezierCurveTo(26, 4, 26 + w1, 30, 24 + w2, 58);
+  const HL = looks.hairLen || 58;
+  ctx.bezierCurveTo(26, 4, 26 + w1, HL * 0.52, 24 + w2, HL);
   const tips = 7;
   for (let i = 0; i <= tips; i++) {
     const f = i / tips;
-    ctx.lineTo(lerp(24 + w2, -22 + w2 * 0.6, f), 58 + (i % 2 ? -7 : 2) + Math.sin(t * 3 + i) * 1.5);
+    ctx.lineTo(lerp(24 + w2, -22 + w2 * 0.6, f), HL + (i % 2 ? -7 : 2) + Math.sin(t * 3 + i) * 1.5);
   }
-  ctx.bezierCurveTo(-24 + w1 * 0.5, 30, -26, 4, -21, -18);
+  ctx.bezierCurveTo(-24 + w1 * 0.5, HL * 0.52, -26, 4, -21, -18);
   ctx.fillStyle = c.girlHair;
   ctx.fill();
   rimStroke(c);
@@ -601,7 +617,7 @@ function drawNaswa(c, t, hold) {
   for (const dx of [-10, 0, 10]) {
     ctx.beginPath();
     ctx.moveTo(dx, -30);
-    ctx.bezierCurveTo(dx + 2, 0, dx + w1 * 0.5, 25, dx + w2 * 0.7, 48);
+    ctx.bezierCurveTo(dx + 2, 0, dx + w1 * 0.5, HL * 0.43, dx + w2 * 0.7, HL - 10);
     ctx.stroke();
   }
   // ribbon, only if Dyas found it in the park
@@ -854,11 +870,14 @@ let running = false;
 
 /**
  * Plays the ending on the game's canvas.
- * opts: { canvas, fx, song, gifts: { flower, milk, ribbon } }
+ * opts: { canvas, fx, song, names: [a, b], looks: {...}, gifts: { flower, milk, ribbon } }
  */
 export function startEnding(opts) {
   ({ canvas, fx, song } = opts);
   gifts = opts.gifts || {};
+  looks = opts.looks || {};
+  if (opts.names) [NAME_A, NAME_B] = opts.names;
+  buildAfter();
   ctx = canvas.getContext('2d');
   buildSubs();
   resize();

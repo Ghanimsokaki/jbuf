@@ -4,10 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
 <meta name="theme-color" content="#2f45a8" />
-<meta name="description" content="Dyas ♥ Naswa — play as Dyas, walk through town at sunset and meet Naswa on the hill." />
-<meta property="og:title" content="Dyas ♥ Naswa · Sunset Errand" />
-<meta property="og:description" content="A little anime adventure. Play as Dyas and meet Naswa on the hill before the sun goes down." />
-<title>Dyas ♥ Naswa · Sunset Errand</title>
+<meta name="description" content="Get a Crush Before College — an anime school game. Five days to graduation. The pact: everyone gets a crush before college, or treats the squad to bakso." />
+<meta property="og:title" content="Get a Crush Before College" />
+<meta property="og:description" content="Five days to graduation. Everyone gets a crush before college — or treats the squad to bakso." />
+<title>Get a Crush Before College</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f45a8'/%3E%3Cpath d='M32 52S12 39 12 25a10 10 0 0 1 20-3 10 10 0 0 1 20 3c0 14-20 27-20 27Z' fill='%23ff7aa8'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,9 +24,17 @@
   <!-- HUD -->
   <div id="hud" class="hud" hidden>
     <p id="quest" class="quest"></p>
-    <ul id="inv" class="inv" aria-label="Gifts for Naswa"></ul>
+    <p id="zone" class="zone"></p>
+    <ul id="hearts" class="hearts" aria-label="Crush meter"></ul>
   </div>
   <div id="toast" class="toast" role="status"></div>
+
+  <!-- day title, like an anime eyecatch -->
+  <div id="eyecatch" class="eyecatch" hidden>
+    <p class="ec-day"></p>
+    <h2 class="ec-name"></h2>
+    <p class="ec-slot"></p>
+  </div>
 
   <!-- dialogue -->
   <div id="dialog" class="dialog" hidden>
@@ -38,27 +46,45 @@
 
   <!-- ending -->
   <div id="title-card" class="title-card" hidden>
-    <p class="kana" lang="ja">ディアス <span>♡</span> ナスワ</p>
-    <h2 class="logo">Dyas <span class="heart">♥</span> Naswa</h2>
-    <p class="episode">Episode 1 · The Sky We Share</p>
+    <p class="kana" lang="ja">卒業までに恋をしろ！</p>
+    <h2 class="logo" id="tc-names"></h2>
+    <p class="episode" id="tc-episode"></p>
   </div>
   <div id="sub" class="sub" aria-live="polite">
     <span class="who"></span>
     <span class="line"></span>
   </div>
+  <section id="results" class="results" hidden>
+    <div class="results-inner">
+      <p class="kana" id="res-kana"></p>
+      <h2 class="logo small" id="res-title"></h2>
+      <p class="res-sub" id="res-sub"></p>
+      <h3>The pact results</h3>
+      <ul id="res-list"></ul>
+      <button id="again" class="start" type="button">Play again</button>
+    </div>
+  </section>
 
   <!-- title screen -->
   <section id="intro" class="intro">
     <div class="intro-inner">
-      <p class="kana" lang="ja">ふたりの夕焼け</p>
-      <h1 class="logo">Dyas <span class="heart">♥</span> Naswa</h1>
-      <p class="episode">Sunset Errand</p>
-      <p class="blurb">You are <b>Dyas</b>. Naswa is waiting on the hill.<br />Get there before the sun goes down.</p>
+      <p class="kana" lang="ja">卒業までに恋をしろ！</p>
+      <h1 class="logo title">Get a Crush<br /><span class="heart">♥</span> Before College</h1>
+      <p class="blurb">Five days until graduation. The squad made a pact:<br /><b>everyone gets a crush before college</b> — or treats everyone to bakso.</p>
       <button id="start" class="start" type="button">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
         Start
       </button>
-      <p class="keys"><kbd>←</kbd><kbd>→</kbd> walk &nbsp;·&nbsp; <kbd>E</kbd> / <kbd>Space</kbd> talk</p>
+      <p class="keys"><kbd>←</kbd><kbd>→</kbd> walk &nbsp;·&nbsp; <kbd>E</kbd> / <kbd>Space</kbd> talk &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>3</kbd> answer</p>
+    </div>
+  </section>
+
+  <!-- character select -->
+  <section id="select" class="select" hidden>
+    <div class="select-inner">
+      <p class="kana">キャラクター選択</p>
+      <h2 class="select-title">Who are you?</h2>
+      <div id="roster" class="roster"></div>
     </div>
   </section>
 

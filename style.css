@@ -309,6 +309,8 @@ kbd {
   backdrop-filter: blur(6px);
 }
 .inv { display: flex; gap: 6px; list-style: none; }
+.hud .zone { padding: 0.2em 0.7em; border-radius: 999px; background: rgba(255,255,255,0.85); color: #3a2a50; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.08em; }
+.hud .zone:empty { display: none; }
 .inv li {
   width: 38px;
   height: 38px;
@@ -446,3 +448,104 @@ kbd {
 .dialog.narr .dialog-text { font-weight: 500; font-style: italic; color: #5a4a6a; }
 body.talking .pad .pad-btn:not(.talk) { visibility: hidden; }
 body.talking .pad .pad-btn.talk { visibility: hidden; }
+
+/* ================================================= get a crush: extras */
+.logo.title { font-size: clamp(2.3rem, 9vw, 5.4rem); white-space: normal; line-height: 1.08; }
+.logo.small { font-size: clamp(2rem, 8vw, 3.6rem); white-space: normal; }
+
+.hearts { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.hearts li {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.2em 0.7em;
+  border-radius: 999px;
+  background: rgba(20, 10, 40, 0.5);
+  font-weight: 700;
+  font-size: 0.8rem;
+  backdrop-filter: blur(6px);
+}
+.hearts .h { color: #ff7aa8; letter-spacing: 0.05em; }
+.hearts .h i { font-style: normal; color: rgba(255, 255, 255, 0.35); }
+
+/* the day title card */
+.eyecatch {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  z-index: 8;
+  pointer-events: none;
+  background: radial-gradient(60% 40% at 50% 50%, rgba(255, 95, 150, 0.95), rgba(58, 42, 120, 0.97));
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.eyecatch[hidden] { display: none; }
+.eyecatch.show { opacity: 1; }
+.eyecatch .ec-day { font-weight: 800; letter-spacing: 0.5em; color: #ffd98a; font-size: clamp(0.9rem, 3vw, 1.2rem); }
+.eyecatch .ec-name {
+  font-weight: 800;
+  font-size: clamp(3rem, 14vw, 7rem);
+  color: #fff;
+  -webkit-text-stroke: 0.05em #c7356c;
+  paint-order: stroke fill;
+  line-height: 1.05;
+  animation: ec-pop 0.7s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+.eyecatch .ec-slot { margin-top: 0.4em; font-weight: 700; color: #fff; font-size: clamp(1rem, 3.4vw, 1.4rem); }
+@keyframes ec-pop { from { transform: scale(0.6) rotate(-4deg); opacity: 0; } }
+
+/* character select */
+.select {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  overflow-y: auto;
+  padding: calc(4.5vh + 20px) 16px calc(4.5vh + 24px);
+  background: radial-gradient(80% 60% at 50% 30%, rgba(255, 122, 168, 0.35), rgba(20, 10, 50, 0.85)), #2f45a8;
+}
+.select[hidden] { display: none; }
+.select-inner { max-width: 980px; margin: 0 auto; text-align: center; }
+.select-title { font-weight: 800; font-size: clamp(2rem, 7vw, 3.2rem); margin: 0.1em 0 0.6em; text-shadow: 0 3px 0 #c7356c; }
+.roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.roster button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px 12px;
+  border-radius: 16px;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(180deg, #ffe9f1, #ffffff 60%);
+  color: #2a1d3a;
+  font-family: var(--font);
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(199, 53, 108, 0.6);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.roster button:hover, .roster button:focus-visible { transform: translateY(-4px); box-shadow: 0 9px 0 rgba(199, 53, 108, 0.6); outline: none; }
+.roster canvas { width: 110px; height: 110px; }
+.roster b { font-weight: 800; font-size: 1.1rem; }
+.roster small { font-weight: 700; color: #a0567a; font-size: 0.78rem; }
+
+/* results */
+.results {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  overflow-y: auto;
+  display: grid;
+  place-items: center;
+  padding: calc(4.5vh + 16px) 16px;
+  background: radial-gradient(70% 55% at 50% 40%, rgba(120, 40, 100, 0.97), rgba(20, 10, 50, 0.98));
+  animation: rise-in 0.8s ease both;
+}
+.results[hidden] { display: none; }
+@keyframes rise-in { from { opacity: 0; } }
+.results-inner { max-width: 560px; width: 100%; text-align: center; }
+.res-sub { margin: 0.5em 0 1.2em; font-weight: 700; line-height: 1.5; }
+.results h3 { font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; font-size: 0.85rem; color: #ffd98a; margin-bottom: 0.6em; }
+#res-list { list-style: none; display: grid; gap: 6px; text-align: left; margin-bottom: 1.4em; }
+#res-list li { padding: 0.5em 0.9em; border-radius: 12px; background: rgba(255, 255, 255, 0.12); font-weight: 600; font-size: 0.92rem; }
+#res-list b { color: #ffc2d8; }
+body.show-results .title-card, body.show-results .sub, body.show-results .tap-hint { visibility: hidden; }
