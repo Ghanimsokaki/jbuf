@@ -1,5 +1,9 @@
 # Get a Crush Before College
 
+*An anime movie you play.* Opening title sequence, character introduction
+cards, visual-novel close-ups with expressions, episode title cards for each
+day, speed lines, film grain, and end credits — all drawn in code.
+
 An anime school game in the browser. Five days until graduation, and the squad
 made a pact: **everyone gets a crush before college** — or treats the whole
 squad to bakso.
@@ -12,9 +16,11 @@ squad to bakso.
    and rooftop.
 3. **Talk to your friends** for advice. That's free, and each of them has a tip
    about one of the crushes.
-4. **Talk to the four classmates** who might become your crush — Alya (class
-   president, library), Rania (canteen chef), Kirana (track ace, courtyard) and
-   Sekar (quiet artist, rooftop). Each has three scenes with a choice; good
+4. **Talk to the seven classmates** who might become your crush — Hana (transfer
+   student from Japan, classroom window seat), Putri (drama club star, hallway),
+   Alya (class president, library), Rania (canteen chef), Kirana (track ace,
+   courtyard), Nayla (astronomy club, rooftop telescope) and Sekar (quiet
+   artist, rooftop). Each has three scenes with a choice; good
    answers fill her hearts. Every scene uses up your lunch break or your
    afternoon, so you only get 10 over the week.
 5. **Friday afternoon:** your top crush waits under the cherry tree. Confess.
@@ -40,6 +46,7 @@ A static site with no build step.
 
 - `index.html`, `style.css`: the page, character select, dialogue box, HUD and touch controls
 - `js/main.js`: the cast, the school, the scenes, the days and the endings
+- `js/portrait.js`: the anime close-up portraits and their expressions
 - `js/ending.js`: the hill-at-sunset ending with the title card and fireworks
 - `js/audio.js`: chimes and dialogue blips (and a built-in song as a fallback)
 - `js/fx.js`: hearts, rings and shooting stars

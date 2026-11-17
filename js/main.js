@@ -12,6 +12,7 @@
 import { LoveSong } from './audio.js';
 import { HeartFx } from './fx.js';
 import { startEnding } from './ending.js';
+import { drawPortrait } from './portrait.js';
 
 const MUSIC_URL = './prettyjohn1-calm-537656.mp3';
 
@@ -185,13 +186,47 @@ const FRIENDS = [
     } },
 ];
 
-/** the four classmates who might become your crush */
+/** the classmates who might become your crush */
 const CRUSHES = {
-  alya: { id: 'alya', name: 'Alya', role: 'class president', x: 1820, look: look({ hair: '#1e1a28', hairHi: '#4a4060', style: 'ponytail', glasses: true, bottom: SKIRT, skirt: true, tie: '#e8304f', skin: '#f6cdb2' }), end: { girlHair: '#1e1a28', girlHairHi: '#4a4060', cardigan: '#ffffff', cardiganSh: '#dfe3ee', hairLen: 40 } },
-  kirana: { id: 'kirana', name: 'Kirana', role: 'track team ace', x: 2990, look: look({ hair: '#3a2420', hairHi: '#6a4438', style: 'bob', top: '#ff8a3a', topSh: '#d86a20', bottom: '#2a2a38', skin: '#d9a07a' }), end: { girlHair: '#3a2420', girlHairHi: '#6a4438', cardigan: '#ff8a3a', cardiganSh: '#d86a20', hairLen: 14 } },
-  sekar: { id: 'sekar', name: 'Sekar', role: 'quiet artist', x: 3720, look: look({ hair: '#5b3428', hairHi: '#8a5a44', style: 'braid', top: '#9fc4a0', topSh: '#7aa47c', bottom: SKIRT, skirt: true, skin: '#f0c4a4' }), end: { girlHair: '#5b3428', girlHairHi: '#8a5a44', cardigan: '#9fc4a0', cardiganSh: '#7aa47c', hairLen: 58 } },
-  rania: { id: 'rania', name: 'Rania', role: 'canteen chef', x: 2440, look: look({ hair: '#2a1a1e', hairHi: '#5a3a44', style: 'bun', apron: '#ff9fc2', bottom: SKIRT, skirt: true, skin: '#e8b48e' }), end: { girlHair: '#2a1a1e', girlHairHi: '#5a3a44', cardigan: '#ff9fc2', cardiganSh: '#e07aa6', hairLen: 26 } },
+  hana: { id: 'hana', name: 'Hana', kana: 'ハナ', role: 'transfer student from Japan', x: 600,
+    look: look({ girl: true, hair: '#16121e', hairHi: '#3a3050', style: 'long', iris: '#4a3a6a', clip: '#ffffff', tie: '#3a5aa8', bottom: SKIRT, skirt: true, skin: '#f8d8c4' }),
+    end: { girlHair: '#16121e', girlHairHi: '#3a3050', cardigan: '#ffffff', cardiganSh: '#dfe3ee', hairLen: 60 } },
+  putri: { id: 'putri', name: 'Putri', kana: 'プトリ', role: 'drama club star', x: 1160,
+    look: look({ girl: true, hair: '#c98a5a', hairHi: '#e8b88a', style: 'twintails', ribbon: '#ff5f96', iris: '#d85a8a', tie: '#ff5f96', bottom: SKIRT, skirt: true, skin: '#f6cdb2' }),
+    end: { girlHair: '#c98a5a', girlHairHi: '#e8b88a', cardigan: '#ffffff', cardiganSh: '#dfe3ee', hairLen: 34 } },
+  alya: { id: 'alya', name: 'Alya', kana: 'アリヤ', role: 'class president', x: 1820,
+    look: look({ girl: true, hair: '#1e1a28', hairHi: '#4a4060', style: 'ponytail', ribbon: '#e8304f', glasses: true, iris: '#4a5aa8', bottom: SKIRT, skirt: true, tie: '#e8304f', skin: '#f6cdb2' }),
+    end: { girlHair: '#1e1a28', girlHairHi: '#4a4060', cardigan: '#ffffff', cardiganSh: '#dfe3ee', hairLen: 40 } },
+  rania: { id: 'rania', name: 'Rania', kana: 'ラニア', role: 'canteen chef', x: 2440,
+    look: look({ girl: true, hair: '#2a1a1e', hairHi: '#5a3a44', style: 'bun', apron: '#ff9fc2', iris: '#7a3a3a', tie: '#ff7aa8', bottom: SKIRT, skirt: true, skin: '#e8b48e' }),
+    end: { girlHair: '#2a1a1e', girlHairHi: '#5a3a44', cardigan: '#ff9fc2', cardiganSh: '#e07aa6', hairLen: 26 } },
+  kirana: { id: 'kirana', name: 'Kirana', kana: 'キラナ', role: 'track team ace', x: 2990,
+    look: look({ girl: true, hair: '#3a2420', hairHi: '#6a4438', style: 'bob', iris: '#8a5a2a', top: '#ff8a3a', topSh: '#d86a20', bottom: '#2a2a38', skin: '#d9a07a' }),
+    end: { girlHair: '#3a2420', girlHairHi: '#6a4438', cardigan: '#ff8a3a', cardiganSh: '#d86a20', hairLen: 14 } },
+  nayla: { id: 'nayla', name: 'Nayla', kana: 'ナイラ', role: 'astronomy club', x: 3560,
+    look: look({ girl: true, hair: '#2a2a4a', hairHi: '#5a5a8a', style: 'pixie', clip: '#ffd23f', iris: '#3a8ad8', top: '#2a3a6a', topSh: '#1c2a50', bottom: SKIRT, skirt: true, skin: '#f0c4a4' }),
+    end: { girlHair: '#2a2a4a', girlHairHi: '#5a5a8a', cardigan: '#2a3a6a', cardiganSh: '#1c2a50', hairLen: 10 } },
+  sekar: { id: 'sekar', name: 'Sekar', kana: 'スカル', role: 'quiet artist', x: 3740,
+    look: look({ girl: true, hair: '#5b3428', hairHi: '#8a5a44', style: 'braid', iris: '#3a7a5a', top: '#9fc4a0', topSh: '#7aa47c', collar: true, bottom: SKIRT, skirt: true, skin: '#f0c4a4' }),
+    end: { girlHair: '#5b3428', girlHairHi: '#8a5a44', cardigan: '#9fc4a0', cardiganSh: '#7aa47c', hairLen: 58 } },
 };
+const CRUSH_IDS = Object.keys(CRUSHES);
+const perCrush = (v) => Object.fromEntries(CRUSH_IDS.map((id) => [id, v]));
+
+/** a little extra for each friend: their name in katakana, eye colour, and a second tip */
+const EXTRA = {
+  Ghanim: ['ガニム', '#3a3050'], Ghiffy: ['ギフィ', '#7a4a2a'], Lindan: ['リンダン', '#3a6a7a', ['nayla', 'Nayla’s tracking a meteor shower on Friday night. Clear skies, by my forecast.']],
+  Arkan: ['アルカン', '#3a2a20'], Dyas: ['ディアス', '#3a3a6a'], Zubair: ['ズバイル', '#5a3a6a', ['hana', 'Hana’s from Japan. Don’t be weird about anime with her. …I learned that the hard way.']],
+  Ahza: ['アフザ', '#4a3020', ['putri', 'I photographed Putri’s rehearsal. She acts confident, but her hands were shaking.']],
+  Aboi: ['アボイ', '#3a2a20'], Qai: ['カイ', '#5a4a7a'], Hamzah: ['ハムザ', '#3a4a2a'],
+  Nizam: ['ニザム', '#3a3a4a', ['putri', 'Putri’s play opens on graduation eve. If she asks for help, help. I’m doing the music.']],
+};
+for (const f of FRIENDS) {
+  const [kana, iris, hint2] = EXTRA[f.name];
+  f.kana = kana;
+  f.look.iris = iris;
+  if (hint2) f.hint2 = hint2;
+}
 
 /* ----------------------------------------------------------------- state */
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -200,9 +235,10 @@ const state = {
   me: null, // the friend you play
   x: 400, face: 1, phase: 0, moving: false,
   day: 0, slot: 0,
-  aff: { alya: 0, kirana: 0, sekar: 0, rania: 0 },
-  scene: { alya: 0, kirana: 0, sekar: 0, rania: 0 }, // scenes seen
-  seenDay: { alya: -1, kirana: -1, sekar: -1, rania: -1 },
+  aff: perCrush(0),
+  scene: perCrush(0), // scenes seen
+  seenDay: perCrush(-1),
+  visits: {},
   met: new Set(),
   talkedFriend: new Set(),
   busy: true, started: false, ended: false,
@@ -224,6 +260,8 @@ const zoneAt = (x) => ZONES.find(([, a, b]) => x >= a && x < b)?.[0] || 'Rooftop
 const SAKURA_X = 3150;
 
 let camX = 0;
+/** before the game starts the camera rests on the cherry tree at sunset */
+let showcase = { x: 3150, q: 0.9 };
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
   W = window.innerWidth;
@@ -333,6 +371,23 @@ function windowPane(x, h, w, hh, q) {
   rect(x + w / 2 - 2, h, 4, hh, '#ffffff');
 }
 
+/** soft beams of light falling from the windows, like a film still */
+function lightBeams(wins, q) {
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (const [x, w] of wins) {
+    const g = ctx.createLinearGradient(0, sy(270), 0, sy(0));
+    g.addColorStop(0, `rgba(255,${Math.round(240 - q * 70)},${Math.round(200 - q * 110)},0.16)`);
+    g.addColorStop(1, 'rgba(255,220,180,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(sx(x), sy(270)); ctx.lineTo(sx(x + w), sy(270));
+    ctx.lineTo(sx(x + w - 160), sy(0)); ctx.lineTo(sx(x - 160), sy(0));
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawInterior(q) {
   const wallTop = 330;
   const walls = [[0, 800, '#f5ecd8'], [800, 1500, '#e6eef7'], [1500, 2100, '#efe2cc'], [2100, 2700, '#fff0dc']];
@@ -353,6 +408,7 @@ function drawInterior(q) {
   text('PACT: a crush before college', 290, 185, 14, '#ffd98a', 700);
   text('♥', 430, 150, 22, '#ff9fc2');
   for (const wx of [520, 650]) windowPane(wx, 130, 110, 140, q);
+  lightBeams([[520, 110], [650, 110], [1390, 90]], q);
   for (const dx of [200, 360, 560, 700]) {
     rect(dx - 34, 60, 68, 8, '#c99a6a');
     rect(dx - 30, 0, 6, 60, '#8a6a4a');
@@ -370,6 +426,12 @@ function drawInterior(q) {
   text('Friday night', 1280, 200, 12, '#3a2a50', 700);
   text('♥ ♥ ♥', 1280, 175, 12, '#ff7aa8');
   windowPane(1390, 130, 90, 140, q);
+  // the drama club poster
+  rect(1020, 150, 90, 120, '#3a2050');
+  text('DRAMA', 1065, 248, 13, '#ffd98a');
+  text('CLUB', 1065, 230, 13, '#ffd98a');
+  text('♥', 1065, 200, 26, '#ff5f96');
+  text('Fri · 7pm', 1065, 168, 10, '#ffffff', 700);
   // library
   const bookCols = ['#e8504f', '#3a5aa8', '#ffcf3f', '#4f8a46', '#7a5bb5'];
   for (const bx of [1530, 1690, 1950]) {
@@ -443,6 +505,14 @@ function drawCourtyardAndRoof(q, t) {
   rect(3400, 0, 12, 260, mix('#d8ccb8', '#c8a890', q));
   rect(3412, 0, 70, 120, mix('#8a9aaa', '#7a6a8a', q));
   text('ROOF', 3447, 135, 12, mix('#5a6a7a', '#6a5a7a', q), 800);
+  // Nayla's telescope
+  ctx.strokeStyle = '#4a4458';
+  ctx.lineWidth = 3 * S;
+  ctx.beginPath(); ctx.moveTo(sx(3610), sy(0)); ctx.lineTo(sx(3624), sy(52)); ctx.lineTo(sx(3638), sy(0)); ctx.moveTo(sx(3624), sy(0)); ctx.lineTo(sx(3624), sy(52)); ctx.stroke();
+  ctx.save(); ctx.translate(sx(3624), sy(58)); ctx.rotate(-0.6);
+  ctx.fillStyle = '#e8eef7'; ctx.fillRect(-26 * S, -6 * S, 52 * S, 12 * S);
+  ctx.fillStyle = '#3a5aa8'; ctx.fillRect(18 * S, -7 * S, 8 * S, 14 * S);
+  ctx.restore();
   // water tank
   rect(3770, 0, 8, 120, '#7a8090');
   rect(3880, 0, 8, 120, '#7a8090');
@@ -508,6 +578,15 @@ function chibi(c, o) {
   }
   if (L.style === 'ponytail') {
     c.beginPath(); c.ellipse(hx - 30 + wind, hy + 2, 9, 22, 0.35 + wind * 0.03, 0, Math.PI * 2); c.fill();
+  }
+  if (L.style === 'long') {
+    c.beginPath(); c.moveTo(hx - 24, hy - 4); c.quadraticCurveTo(hx - 30 + wind, hy + 30, hx - 22 + wind * 1.5, hy + 52); c.lineTo(hx + 4, hy + 50); c.lineTo(hx + 10, hy + 6); c.fill();
+  }
+  if (L.style === 'twintails') {
+    for (const dx of [-26, -18]) { c.beginPath(); c.ellipse(hx + dx + wind, hy + 18, 8, 26, 0.2 + wind * 0.02, 0, Math.PI * 2); c.fill(); }
+    c.fillStyle = L.ribbon || '#ff5f96';
+    c.beginPath(); c.arc(hx - 22, hy - 8, 5, 0, Math.PI * 2); c.fill();
+    c.fillStyle = L.hair;
   }
   if (L.style === 'braid') {
     for (let i = 0; i < 6; i++) { c.beginPath(); c.arc(hx - 20 + wind * (i / 6), hy + 4 + i * 9, 7 - i * 0.4, 0, Math.PI * 2); c.fill(); }
@@ -644,7 +723,7 @@ function chibi(c, o) {
     c.lineWidth = 2;
     c.beginPath(); c.arc(hx - 2, hy - 4, 16, Math.PI * 1.15, Math.PI * 1.5); c.stroke();
   }
-  if (!['bob', 'braid'].includes(L.style)) {
+  if (!['bob', 'braid', 'long', 'twintails'].includes(L.style)) {
     c.fillStyle = L.skin;
     c.beginPath(); c.ellipse(hx - 5, hy + 4, 4, 5.5, 0, 0, Math.PI * 2); c.fill();
   }
@@ -715,7 +794,63 @@ function whoClass(who) {
   if (Object.values(CRUSHES).some((c) => c.name === who)) return 'naswa'; // pink for crushes
   return 'other';
 }
-function say(who, line) {
+const stageEl = $('stage');
+const porL = $('por-left'), porR = $('por-right');
+const stage = { right: null, speaker: null, ex: {}, fx: null };
+function lookOf(name) {
+  if (name === state.me?.name) return state.me.look;
+  return (FRIENDS.find((f) => f.name === name) || Object.values(CRUSHES).find((c) => c.name === name))?.look;
+}
+function paintPortrait(cv, name, t) {
+  const L = name && lookOf(name);
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (!w) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext('2d');
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.clearRect(0, 0, w, h);
+  if (!L) return;
+  const talkingNow = speaking === name;
+  drawPortrait(c, w, h, L, { expr: stage.ex[name], talking: talkingNow, t, seed: name.length * 3, fx: stage.speaker === name ? stage.fx : null });
+}
+function drawStage(t) {
+  if (stageEl.hidden) return;
+  paintPortrait(porL, state.me?.name, t);
+  paintPortrait(porR, stage.right, t);
+  porL.classList.toggle('dim', stage.speaker !== state.me?.name);
+  porR.classList.toggle('dim', !stage.right || stage.speaker !== stage.right);
+  porR.classList.toggle('gone', !stage.right);
+}
+/** speed lines and a screen shake, for big reactions */
+function shock() {
+  const cv = $('lines');
+  const w = cv.width = innerWidth, h = cv.height = innerHeight;
+  const c = cv.getContext('2d');
+  c.clearRect(0, 0, w, h);
+  c.fillStyle = 'rgba(255,255,255,0.9)';
+  for (let i = 0; i < 90; i++) {
+    const a = (i / 90) * Math.PI * 2 + Math.random() * 0.05;
+    const r0 = Math.min(w, h) * (0.32 + Math.random() * 0.15), r1 = Math.max(w, h);
+    const da = 0.004 + Math.random() * 0.01;
+    c.beginPath();
+    c.moveTo(w / 2 + Math.cos(a) * r0, h / 2 + Math.sin(a) * r0);
+    c.lineTo(w / 2 + Math.cos(a - da) * r1, h / 2 + Math.sin(a - da) * r1);
+    c.lineTo(w / 2 + Math.cos(a + da) * r1, h / 2 + Math.sin(a + da) * r1);
+    c.fill();
+  }
+  cv.classList.remove('show'); void cv.offsetWidth; cv.classList.add('show');
+  document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake');
+}
+
+function say(who, line, ex = null, effect = null) {
+  // who is on stage: you on the left, whoever you're talking to on the right
+  if (who && who !== state.me?.name) stage.right = who;
+  stage.speaker = who || null;
+  if (who) stage.ex[who] = ex || (lookOf(who)?.sleepy ? 'sleepy' : 'normal');
+  stage.fx = effect;
+  if (state.me && !state.ended) stageEl.hidden = false;
+  if (effect === 'shock' && !reduced) shock();
   return new Promise((resolve) => {
     dlg.hidden = false;
     dlg.classList.remove('done');
@@ -768,7 +903,7 @@ function choose(options) {
     window.addEventListener('keydown', onKey, true);
   });
 }
-function closeDialog() { dlg.hidden = true; speaking = null; }
+function closeDialog() { dlg.hidden = true; speaking = null; stageEl.hidden = true; stage.right = null; stage.ex = {}; }
 dlg.addEventListener('click', () => advance && advance());
 
 /* ------------------------------------------------------------- HUD */
@@ -803,6 +938,7 @@ async function talk(n) {
   state.moving = false;
   state.face = n.x > state.x ? 1 : -1;
   let usedTime = false;
+  stage.right = n.who.name;
   if (n.kind === 'friend') await talkFriend(n.who);
   else usedTime = await talkCrush(n.who);
   closeDialog();
@@ -824,12 +960,13 @@ async function talkFriend(f) {
   }
   if (!state.talkedFriend.has(f.name)) {
     state.talkedFriend.add(f.name);
-    await say(f.name, f.line);
+    await say(f.name, f.line, 'happy');
     const [cid, tip] = f.hint;
     await say(f.name, tip);
     if (!state.met.has(cid)) await say(me, `${CRUSHES[cid].name}… the ${CRUSHES[cid].role}? Hmm.`);
     return;
   }
+  state.visits[f.name] = (state.visits[f.name] || 0) + 1;
   const r = seeded(state.day * 13 + state.slot * 5 + f.name.length)();
   const left = 5 - state.day;
   const lines = [
@@ -838,8 +975,10 @@ async function talkFriend(f) {
     'I believe in you. Mostly. Like 60%.',
     'Go! Time’s ticking!',
   ];
-  await say(f.name, lines[Math.floor(r * lines.length)]);
-  await say(f.name, f.hint[1]);
+  await say(f.name, lines[Math.floor(r * lines.length)], 'smug');
+  const [cid, tip] = f.hint2 && state.visits[f.name] % 2 ? f.hint2 : f.hint;
+  await say(f.name, tip);
+  if (!state.met.has(cid)) await say(me, `${CRUSHES[cid].name}… the ${CRUSHES[cid].role}? Hmm.`);
 }
 
 /** returns true when the talk used up the time slot */
@@ -857,6 +996,7 @@ async function talkCrush(c) {
     await say(c.name, `See you tomorrow, ${state.me.name}.`);
     return false;
   }
+  if (!state.met.has(c.id)) await introCard(c);
   state.met.add(c.id);
   state.last = c.id;
   const gain = await SCENES[c.id][state.scene[c.id]](c, state.me.name);
@@ -871,61 +1011,177 @@ async function talkCrush(c) {
   return true;
 }
 
-/** each scene is a little moment with one choice; it returns 2, 1 or 0 affection */
+/**
+ * Each scene is a little moment with one choice; it returns 2, 1 or 0
+ * affection. say(who, line, expression, effect)
+ */
 const SCENES = {
+  hana: [
+    async (c, me) => {
+      await say('', 'By the classroom window sits Hana, the transfer student from Japan, watching the clouds.');
+      await say(c.name, 'Ah— sorry. In Japan, the window seat is where the main character sits.', 'surprised');
+      await say(c.name, '…That was a joke.', 'smug');
+      const i = await choose(['Then I guess I’m the side character who talks to you.', 'Your Indonesian is really good!', 'Do you know any ninjas?']);
+      if (i === 0) { await say(c.name, 'Fufu. Side characters always get the best episodes.', 'happy', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'Terima kasih! I practised with a lot of sinetron.', 'happy'); return 1; }
+      await say(c.name, '…No.', 'annoyed', 'anger');
+      return 0;
+    },
+    async (c, me) => {
+      await say(c.name, 'My family moves every two years. I always leave right when I finally make friends.', 'sad');
+      await say(c.name, `So I try not to get close. …It’s easier that way, ${me}.`, 'sad');
+      const i = await choose(['Then let’s make this one count. Graduation isn’t goodbye.', 'You can text me from anywhere.', 'That sounds exhausting.']);
+      if (i === 0) { await say(c.name, '…Okay. Let’s make it count.', 'blush', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'Every day? …I might actually do it.', 'happy'); return 1; }
+      await say(c.name, '…It is.', 'sad');
+      return 0;
+    },
+    async (c, me) => {
+      await say('', 'Hana slides a folded note across the desk. It’s written in Japanese.');
+      await say(c.name, 'Don’t translate it until after graduation. Promise.', 'blush');
+      const i = await choose(['I promise. I’ll wait.', 'Open it right now.', 'Is it a ransom note?']);
+      if (i === 0) { await say(c.name, '…It says “I’m glad I met you.” …Ah. I just told you.', 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'Mou! …Fine. It says “thank you.” Mostly.', 'annoyed', 'sweat'); return 1; }
+      await say(c.name, 'It is now.', 'annoyed', 'anger');
+      return 0;
+    },
+  ],
+  putri: [
+    async (c, me) => {
+      await say(c.name, 'Ah! A volunteer! Read this line with me: “I’ve loved you since the first day of school!”', 'happy', 'sparkle');
+      const i = await choose(['Read it with full drama.', 'Read it, but mumble.', 'Run away.']);
+      if (i === 0) { await say(c.name, '…Whoa. You’re actually good. Our lead just quit — want the part?', 'surprised', 'shock'); return 2; }
+      if (i === 1) { await say(c.name, 'Louder! From the diaphragm! …Eh. It’ll do.', 'annoyed', 'sweat'); return 1; }
+      await say(c.name, 'COWARD!', 'annoyed', 'anger');
+      return 0;
+    },
+    async (c, me) => {
+      await say(c.name, 'Opening night is graduation eve. If I forget my lines, the whole school will see.', 'sad');
+      const i = await choose(['Then I’ll be in the front row, cheering the loudest.', 'You won’t forget. You’re Putri.', 'Just… don’t forget them?']);
+      if (i === 0) { await say(c.name, '…Front row. I’ll look for you. Don’t you dare leave.', 'blush', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'Hmph. Of course I won’t. …Thanks.', 'smug'); return 1; }
+      await say(c.name, 'Wow. So helpful.', 'annoyed');
+      return 0;
+    },
+    async (c, me) => {
+      await say(c.name, 'No script this time. Real talk.', 'sad');
+      await say(c.name, `Do you ever feel like you’re always acting? Like nobody sees the real you, ${me}?`, 'sad');
+      const i = await choose(['I see you. The real one’s better than any role.', 'Sometimes. But not when I’m with you.', 'Is this a line from the play?']);
+      if (i === 0) { await say(c.name, '…That wasn’t in the script. Say it again?', 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, '…Same. Weird, huh?', 'blush'); return 1; }
+      await say(c.name, '…Yeah. Sure. It’s from the play.', 'sad');
+      return 0;
+    },
+  ],
   alya: [
     async (c, me) => {
-      await say('', 'Alya, the class president, is buried in a stack of college forms.');
-      await say(c.name, `Oh. ${me}. If you came to copy homework, the answer is no.`);
+      await say('', 'Alya, the class president, is buried under a stack of college forms.');
+      await say(c.name, `Oh. ${me}. If you came to copy homework, the answer is no.`, 'annoyed');
       const i = await choose(['I came to help with those forms.', '…Is it that obvious?', 'You look tired. You should smile more.']);
-      if (i === 0) { await say(c.name, '…You’d actually do that? Fine. Sort these by deadline.'); await say('', 'You spend the whole break sorting forms. She hums while she works.'); return 2; }
-      if (i === 1) { await say(c.name, 'Painfully. …Sit. I’ll explain it instead. Copying won’t help you in college.'); return 1; }
-      await say(c.name, 'And you should mind your own business.');
+      if (i === 0) { await say(c.name, '…You’d actually do that? Fine. Sort these by deadline.', 'surprised'); await say('', 'You spend the whole break sorting forms. She hums while she works.'); return 2; }
+      if (i === 1) { await say(c.name, 'Painfully. …Sit. I’ll explain it instead. Copying won’t help you in college.', 'smug'); return 1; }
+      await say(c.name, 'And you should mind your own business.', 'annoyed', 'anger');
       return 0;
     },
     async (c) => {
-      await say(c.name, 'I got into the university in Bandung. My parents are thrilled.');
-      await say(c.name, '…I’m scared, though. Living alone, new city. Is that stupid?');
+      await say(c.name, 'I got into the university in Bandung. My parents are thrilled.', 'normal');
+      await say(c.name, '…I’m scared, though. Living alone, a new city. Is that stupid?', 'sad');
       const i = await choose(['Not stupid. I’m scared too.', 'You’ll be fine, you’re the smartest here!', 'Bandung is really far, huh.']);
-      if (i === 0) { await say(c.name, '…Thanks. That helps more than you’d think.'); return 2; }
-      if (i === 1) { await say(c.name, 'Everyone says that. It doesn’t make it less scary. But… thanks.'); return 1; }
-      await say(c.name, '…Thanks for reminding me.');
+      if (i === 0) { await say(c.name, '…Thanks. That helps more than you’d think.', 'blush', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'Everyone says that. It doesn’t make it less scary. But… thanks.', 'sad'); return 1; }
+      await say(c.name, '…Thanks for reminding me.', 'annoyed');
       return 0;
     },
     async (c, me) => {
       await say('', 'Behind the library, Alya is crouched down, feeding a stray cat.');
-      await say(c.name, `Wh— ${me}! Don’t tell anyone. The class president feeding cats is bad for my image.`);
+      await say(c.name, `Wh— ${me}! Don’t tell anyone. The class president feeding cats is bad for my image.`, 'surprised', 'shock');
       const i = await choose(['Your secret’s safe with me.', 'Can I pet her too?', 'Everyone already knows.']);
-      if (i === 0) { await say(c.name, `…You’re nicer than you look, ${me}.`); return 2; }
-      if (i === 1) { await say(c.name, 'Gently! …Huh. She likes you.'); return 1; }
-      await say(c.name, 'WHAT.');
+      if (i === 0) { await say(c.name, `…You’re nicer than you look, ${me}.`, 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'Gently! …Huh. She likes you.', 'happy'); return 1; }
+      await say(c.name, 'WHAT.', 'surprised', 'shock');
+      return 0;
+    },
+  ],
+  rania: [
+    async (c, me) => {
+      await say(c.name, `${me}! Taste test! New recipe: bakso with cheese inside. Be honest!`, 'happy');
+      const i = await choose(['It’s great — but it needs more chili.', 'Delicious!', 'Cheese in bakso is a crime.']);
+      if (i === 0) { await say(c.name, 'An honest critic! Finally! You’re my official taster now.', 'happy', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'You’d say that about anything. …But thanks.', 'smug'); return 1; }
+      await say(c.name, 'Then you are banned from my canteen.', 'annoyed', 'anger');
+      return 0;
+    },
+    async (c) => {
+      await say(c.name, 'I want to open a café after college. Everyone says it’s not a “real” career.', 'sad');
+      const i = await choose(['Your food makes people happy. That’s as real as it gets.', 'I’ll be your first customer.', 'Maybe get a “real” degree first?']);
+      if (i === 0) { await say(c.name, '…I’m going to remember you said that.', 'blush', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'First customer pays double. …Kidding.', 'happy'); return 1; }
+      await say(c.name, '…You sound like my uncle.', 'annoyed');
+      return 0;
+    },
+    async (c) => {
+      await say('', 'Rania hands you a bento. The egg is shaped like a heart.');
+      await say(c.name, 'Don’t read into the egg. …It just came out that shape.', 'blush', 'sweat');
+      const i = await choose(['Then I’ll pretend I didn’t notice. …I noticed.', 'Thank you! It looks amazing.', 'Is this a pity bento?']);
+      if (i === 0) { await say(c.name, '…Shut up and eat.', 'blush', 'heart'); await say('', 'Her ears are bright red.'); return 2; }
+      if (i === 1) { await say(c.name, 'Eat it while it’s warm!', 'happy'); return 1; }
+      await say(c.name, 'It WAS a nice bento.', 'annoyed', 'anger');
       return 0;
     },
   ],
   kirana: [
     async (c, me) => {
-      await say(c.name, `Hey, ${me}! Race me to the fence! Loser buys es teh!`);
+      await say(c.name, `Hey, ${me}! Race me to the fence! Loser buys es teh!`, 'happy');
       const i = await choose(['You’re on!', 'I’ll cheer for you from here.', 'Running is for people without motorbikes.']);
-      if (i === 0) { await say('', 'You lose. Badly. But you finish.'); await say(c.name, 'You lost, but you didn’t quit. I like that.'); return 2; }
-      if (i === 1) { await say(c.name, 'Boo! …Okay, the cheering was kind of cute.'); return 1; }
-      await say(c.name, '…Wow. Okay.');
+      if (i === 0) { await say('', 'You lose. Badly. But you finish.'); await say(c.name, 'You lost, but you didn’t quit. I like that.', 'happy', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'Boo! …Okay, the cheering was kind of cute.', 'smug'); return 1; }
+      await say(c.name, '…Wow. Okay.', 'annoyed');
       return 0;
     },
     async (c) => {
       await say('', 'Kirana sits on the bench with an ice pack on her knee.');
-      await say(c.name, 'Twisted it. Right before the last meet. Great timing, huh?');
+      await say(c.name, 'Twisted it. Right before the last meet. Great timing, huh?', 'sad');
       const i = await choose(['Let me carry your bag to the nurse.', 'Does it hurt a lot?', 'Guess you’re done running, then.']);
-      if (i === 0) { await say(c.name, '…You don’t have to. …Okay. Thanks.'); return 2; }
-      if (i === 1) { await say(c.name, 'Only my pride. Thanks for asking.'); return 1; }
-      await say(c.name, 'Thanks, coach. Really encouraging.');
+      if (i === 0) { await say(c.name, '…You don’t have to. …Okay. Thanks.', 'blush', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'Only my pride. Thanks for asking.', 'normal'); return 1; }
+      await say(c.name, 'Thanks, coach. Really encouraging.', 'annoyed', 'anger');
       return 0;
     },
     async (c, me) => {
-      await say(c.name, `${me}! I got the sports scholarship! …You’re the first person I told.`);
+      await say(c.name, `${me}! I got the sports scholarship! …You’re the first person I told.`, 'happy', 'sparkle');
       const i = await choose(['I knew you would. I’m so proud of you.', 'Congrats! Now you can buy me es teh.', 'Oh, cool. Anyway—']);
-      if (i === 0) { await say(c.name, '…Don’t make that face. You’ll make me cry.'); return 2; }
-      if (i === 1) { await say(c.name, 'Ha! Deal. A big one.'); return 1; }
-      await say(c.name, '…Yeah. Anyway.');
+      if (i === 0) { await say(c.name, '…Don’t make that face. You’ll make me cry.', 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'Ha! Deal. A big one.', 'happy'); return 1; }
+      await say(c.name, '…Yeah. Anyway.', 'sad');
+      return 0;
+    },
+  ],
+  nayla: [
+    async (c) => {
+      await say('', 'Nayla from the astronomy club is fiddling with a telescope pointed at an empty sky.');
+      await say(c.name, 'Shh. I’m calibrating. There’s a meteor shower on Friday night.', 'annoyed');
+      const i = await choose(['Can I watch it with you?', 'What’s a meteor shower?', 'Stars are just old light. Kind of sad.']);
+      if (i === 0) { await say(c.name, '…You’d stay up that late? For space rocks? …Okay. Bring snacks.', 'blush', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'Tiny bits of a comet burning up in the sky. Hundreds of wishes, all at once.', 'happy'); return 1; }
+      await say(c.name, 'That’s the beautiful part, actually. You just don’t get it.', 'annoyed');
+      return 0;
+    },
+    async (c) => {
+      await say(c.name, 'See those two? Vega and Altair. Two stars on opposite sides of the Milky Way.', 'normal');
+      await say(c.name, 'The story says they only get to meet once a year.', 'sad');
+      const i = await choose(['Then I’d cross the Milky Way every day.', 'That’s a sad story.', 'Sounds like long-distance. Never works.']);
+      if (i === 0) { await say(c.name, '…That’s not how space works. …But I liked it.', 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'It’s a love story. Sad ones count too.', 'sad'); return 1; }
+      await say(c.name, '…Okay, Mr. Romance.', 'annoyed', 'anger');
+      return 0;
+    },
+    async (c, me) => {
+      await say(c.name, 'I named an asteroid. Well — I submitted a name. It’s tiny and far away and no one will ever see it.', 'blush');
+      await say(c.name, '…I named it after someone.', 'blush', 'sweat');
+      const i = await choose(['…Is that someone on this rooftop right now?', 'Lucky someone.', 'Hope it doesn’t crash into Earth.']);
+      if (i === 0) { await say(c.name, `…Asteroid ${me}. It’s very small. And very bright.`, 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, '…Yeah. Lucky.', 'smug'); return 1; }
+      await say(c.name, '…I’m renaming it.', 'annoyed', 'anger');
       return 0;
     },
   ],
@@ -933,65 +1189,122 @@ const SCENES = {
     async (c) => {
       await say('', 'Sekar is sketching the sky. She hasn’t noticed you.');
       const i = await choose(['Sit quietly and watch the clouds with her.', 'Whoa, can I see that?', 'Is this the art club? Where’s everyone?']);
-      if (i === 0) { await say('', 'You sit. Neither of you says anything. A cloud drifts by.'); await say(c.name, '…You didn’t say anything. That was nice.'); return 2; }
-      if (i === 1) { await say(c.name, 'It’s not done… but okay. Just a peek.'); return 1; }
-      await say(c.name, 'There is no everyone. Just me.');
+      if (i === 0) { await say('', 'You sit. Neither of you says anything. A cloud drifts by.'); await say(c.name, '…You didn’t say anything. That was nice.', 'blush', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'It’s not done… but okay. Just a peek.', 'surprised', 'sweat'); return 1; }
+      await say(c.name, 'There is no everyone. Just me.', 'sad');
       return 0;
     },
     async (c, me) => {
-      await say(c.name, 'I’m drawing everyone in our class before we graduate. So I don’t forget anyone.');
-      await say(c.name, `…Can I draw you, ${me}?`);
+      await say(c.name, 'I’m drawing everyone in our class before we graduate. So I don’t forget anyone.', 'normal');
+      await say(c.name, `…Can I draw you, ${me}?`, 'blush');
       const i = await choose(['Only if I can keep a copy.', 'Sure! Make me look cool.', 'Nah, I’m not photogenic.']);
-      if (i === 0) { await say(c.name, '…Okay. I’ll make it a good one, then.'); return 2; }
-      if (i === 1) { await say(c.name, 'I draw what I see. …You already look cool. Hold still.'); return 1; }
-      await say(c.name, 'Drawing isn’t a photo…');
+      if (i === 0) { await say(c.name, '…Okay. I’ll make it a good one, then.', 'happy', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'I draw what I see. …You already look cool. Hold still.', 'blush'); return 1; }
+      await say(c.name, 'Drawing isn’t a photo…', 'sad');
       return 0;
     },
     async (c) => {
       await say('', 'Sekar turns her sketchbook around. It’s you, laughing with your friends in the canteen.');
-      await say(c.name, 'I drew this one from memory.');
+      await say(c.name, 'I drew this one from memory.', 'blush');
       const i = await choose(['You remember that day? …I remember it too.', 'You drew me?! It’s amazing.', 'My nose isn’t that big.']);
-      if (i === 0) { await say(c.name, '…I remember a lot of days with you in them.'); return 2; }
-      if (i === 1) { await say(c.name, 'It was easy. You laugh a lot.'); return 1; }
-      await say(c.name, '…It’s exactly that big.');
-      return 0;
-    },
-  ],
-  rania: [
-    async (c, me) => {
-      await say(c.name, `${me}! Taste test! New recipe: bakso with cheese inside. Be honest!`);
-      const i = await choose(['It’s great — but it needs more chili.', 'Delicious!', 'Cheese in bakso is a crime.']);
-      if (i === 0) { await say(c.name, 'An honest critic! Finally! You’re my official taster now.'); return 2; }
-      if (i === 1) { await say(c.name, 'You’d say that about anything. …But thanks.'); return 1; }
-      await say(c.name, 'Then you are banned from my canteen.');
-      return 0;
-    },
-    async (c) => {
-      await say(c.name, 'I want to open a café after college. Everyone says it’s not a “real” career.');
-      const i = await choose(['Your food makes people happy. That’s as real as it gets.', 'I’ll be your first customer.', 'Maybe get a “real” degree first?']);
-      if (i === 0) { await say(c.name, '…I’m going to remember you said that.'); return 2; }
-      if (i === 1) { await say(c.name, 'First customer pays double. …Kidding.'); return 1; }
-      await say(c.name, '…You sound like my uncle.');
-      return 0;
-    },
-    async (c) => {
-      await say('', 'Rania hands you a bento. The egg is shaped like a heart.');
-      await say(c.name, 'Don’t read into the egg. …It just came out that shape.');
-      const i = await choose(['Then I’ll pretend I didn’t notice. …I noticed.', 'Thank you! It looks amazing.', 'Is this a pity bento?']);
-      if (i === 0) { await say(c.name, '…Shut up and eat.'); await say('', 'Her ears are bright red.'); return 2; }
-      if (i === 1) { await say(c.name, 'Eat it while it’s warm!'); return 1; }
-      await say(c.name, 'It WAS a nice bento.');
+      if (i === 0) { await say(c.name, '…I remember a lot of days with you in them.', 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'It was easy. You laugh a lot.', 'happy'); return 1; }
+      await say(c.name, '…It’s exactly that big.', 'smug');
       return 0;
     },
   ],
 };
 
+/* ------------------------------------------------- cinematic moments */
+const EPISODES = ['The Pact', 'Hearts on the Line', 'Halfway There', 'Almost Brave', 'Under the Cherry Tree'];
+
+/** the freeze-frame card anime uses to introduce a character */
+async function introCard(who, label) {
+  const card = $('card');
+  card.querySelector('.card-kana').textContent = who.kana || '';
+  card.querySelector('.card-name').textContent = who.name;
+  card.querySelector('.card-role').textContent = label || who.role;
+  card.hidden = false;
+  const cv = $('card-por');
+  const t0 = performance.now();
+  let live = true;
+  const draw = () => {
+    if (!live) return;
+    const w = cv.clientWidth, h = cv.clientHeight, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (w && cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    const c = cv.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, w, h);
+    drawPortrait(c, w, h, who.look, { expr: who.look.girl ? 'happy' : 'smug', t: (performance.now() - t0) / 1000, seed: 2, fx: 'sparkle' });
+    requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+  await wait(30);
+  card.classList.add('show');
+  song.chime();
+  await wait(reduced ? 1200 : 2600);
+  card.classList.remove('show');
+  await wait(450);
+  live = false;
+  card.hidden = true;
+}
+
+/** the opening: a few lines over the cherry tree, then the title drop */
+async function opening() {
+  const op = $('op');
+  const lineEl = op.querySelector('.op-line');
+  op.hidden = false;
+  let skip = false;
+  const onSkip = () => { skip = true; };
+  op.addEventListener('click', onSkip);
+  window.addEventListener('keydown', onSkip, { once: true });
+  const beats = ['Five days before graduation.', 'Eleven friends.', 'One pact.'];
+  for (const b of beats) {
+    if (skip) break;
+    lineEl.textContent = b;
+    lineEl.classList.remove('show'); void lineEl.offsetWidth; lineEl.classList.add('show');
+    await wait(reduced ? 900 : 1900);
+  }
+  lineEl.classList.remove('show');
+  op.classList.add('flash');
+  song.chime();
+  op.querySelector('.op-title').classList.add('show');
+  await wait(skip ? 600 : 2600);
+  op.removeEventListener('click', onSkip);
+  op.classList.add('out');
+  await wait(600);
+  op.hidden = true;
+}
+
+/** end credits rolling over the night sky */
+async function credits(c) {
+  const el = $('credits');
+  const roll = el.querySelector('.roll');
+  const others = Object.values(CRUSHES).filter((x) => x !== c).map((x) => x.name).join(' · ');
+  const squad = FRIENDS.filter((f) => f !== state.me).map((f) => `<p>${f.name} <small>${f.role}</small></p>`).join('');
+  roll.innerHTML = `
+    <h2>Get a Crush Before College</h2>
+    <h3>Starring</h3><p class="big">${state.me.name}</p><p class="big pink">${c.name}</p>
+    <h3>The Squad</h3>${squad}
+    <h3>Classmates</h3><p>${others}</p>
+    <h3>Music</h3><p>“Calm” by prettyjohn1</p>
+    <h3>Filmed on location at</h3><p>Class 12-A · the library · the canteen · the rooftop · the cherry tree</p>
+    <p class="fin">ありがとう — thank you for playing</p>`;
+  el.hidden = false;
+  document.body.classList.add('credits-on');
+  await wait(30);
+  el.classList.add('roll-on');
+  await new Promise((r) => { const done = () => { el.removeEventListener('click', done); r(); }; el.addEventListener('click', done); setTimeout(done, reduced ? 6000 : 26000); });
+  el.hidden = true;
+  document.body.classList.remove('credits-on');
+}
+
 /* ------------------------------------------------------------- time */
 const fade = $('fade');
 async function eyecatch() {
   const ec = $('eyecatch');
-  ec.querySelector('.ec-day').textContent = `DAY ${state.day + 1}`;
-  ec.querySelector('.ec-name').textContent = DAYS[state.day];
+  ec.querySelector('.ec-day').textContent = `EPISODE ${state.day + 1} · ${DAYS[state.day]}`;
+  ec.querySelector('.ec-name').textContent = EPISODES[state.day];
   ec.querySelector('.ec-slot').textContent = isFinal() ? 'The last afternoon' : SLOTS[state.slot];
   ec.hidden = false;
   await wait(30);
@@ -1028,7 +1341,7 @@ async function finalAfternoon() {
   }
   await say(other('Ghanim', 'Lindan'), `This is it, ${me}. Graduation is tomorrow.`);
   await say(other('Ghiffy', 'Arkan'), `${top.name} is waiting by the cherry tree in the courtyard. I may have… told her you wanted to talk.`);
-  await say(me, 'You WHAT?');
+  await say(me, 'You WHAT?', 'surprised', 'shock');
   await say(other('Lindan', 'Nizam'), 'Go. Be honest. We’ll be hiding in the bushes. Supportively.');
   closeDialog();
 }
@@ -1037,27 +1350,27 @@ async function finalAfternoon() {
 async function confession(c) {
   const me = state.me.name;
   await say('', `Petals drift down from the cherry tree. ${c.name} turns around.`);
-  await say(c.name, `${me}. Your friends said you wanted to tell me something. …Then they ran away.`);
+  await say(c.name, `${me}. Your friends said you wanted to tell me something. …Then they ran away.`, 'blush', 'sweat');
   const mine = state.me.end;
   const i = await choose([mine.option, 'I like you. I have for a while.', '(Say nothing. Just hold out your hand.)']);
   if (state.aff[c.id] < 4) {
-    await say(c.name, `${me}… you’re really sweet. But I feel like I’ve only just met you.`);
-    await say(c.name, 'Text me in college? Let’s see what happens.');
+    await say(c.name, `${me}… you’re really sweet. But I feel like I’ve only just met you.`, 'sad');
+    await say(c.name, 'Text me in college? Let’s see what happens.', 'blush');
     closeDialog();
     await baksoEnd(c);
     return;
   }
-  if (i === 0) await say(c.name, mine.reply);
-  else if (i === 1) await say(c.name, '…Took you long enough. I like you too.');
-  else { await say('', `${c.name} looks at your hand for a long moment. Then she takes it.`); await say(c.name, '…Hi.'); }
-  await say(other('Ghiffy', 'Aboi'), '(from the bushes) LET’S GOOOOO!');
-  await say(c.name, 'Were they there the whole time?!');
+  if (i === 0) await say(c.name, mine.reply, 'blush', 'heart');
+  else if (i === 1) await say(c.name, '…Took you long enough. I like you too.', 'blush', 'heart');
+  else { await say('', `${c.name} looks at your hand for a long moment. Then she takes it.`); await say(c.name, '…Hi.', 'happy', 'heart'); }
+  await say(other('Ghiffy', 'Aboi'), '(from the bushes) LET’S GOOOOO!', 'happy', 'shock');
+  await say(c.name, 'Were they there the whole time?!', 'surprised', 'sweat');
   closeDialog();
   happyEnd(c);
 }
 
 function results(winner) {
-  const r = seeded(state.aff.alya * 7 + state.aff.kirana * 5 + state.aff.sekar * 3 + state.aff.rania + state.me.name.length);
+  const r = seeded(CRUSH_IDS.reduce((a, id, k) => a + state.aff[id] * (k + 3), 0) + state.me.name.length);
   const ul = $('res-list');
   ul.innerHTML = '';
   const me = document.createElement('li');
@@ -1072,12 +1385,14 @@ function results(winner) {
 }
 
 async function baksoEnd(c) {
+  closeDialog();
   state.ended = true;
   state.busy = true;
   fade.classList.add('on');
   await wait(1200);
   $('hud').hidden = true;
   $('pad').hidden = true;
+  document.body.classList.remove('talking');
   $('res-kana').textContent = 'バクソ・エンド';
   $('res-title').textContent = 'Bakso End';
   $('res-sub').textContent = c
@@ -1090,6 +1405,7 @@ async function baksoEnd(c) {
 }
 
 function happyEnd(c) {
+  closeDialog();
   state.ended = true;
   state.busy = true;
   fade.classList.add('on');
@@ -1097,6 +1413,7 @@ function happyEnd(c) {
     $('hud').hidden = true;
     $('pad').hidden = true;
     stopLoop = true;
+    document.body.classList.remove('talking');
     $('tc-names').innerHTML = `${state.me.name} <span class="heart">♥</span> ${c.name}`;
     $('tc-episode').textContent = 'Final Episode · Get a Crush Before College';
     const L = state.me.look;
@@ -1109,15 +1426,16 @@ function happyEnd(c) {
       personal: [state.me.end.b, state.me.end.a],
     });
     fade.classList.remove('on');
-    // once the title card has had its moment, show how everyone did
-    setTimeout(() => {
+    // after the title card: the credits roll, then how everyone did
+    setTimeout(async () => {
+      await credits(c);
       $('res-kana').textContent = '卒業おめでとう！';
       $('res-title').innerHTML = `${state.me.name} <span class="heart">♥</span> ${c.name}`;
       $('res-sub').textContent = `${state.me.end.epilogue} No bakso bill tonight. (Okay, bakso anyway. To celebrate.)`;
       results(c);
       document.body.classList.add('show-results');
       $('results').hidden = false;
-    }, 56000);
+    }, 47000);
   }, 1300);
 }
 
@@ -1189,7 +1507,8 @@ function frame(now) {
   const z = zoneAt(state.x);
   if (z !== lastZone && state.started) { lastZone = z; $('zone').textContent = z; }
 
-  const q = lateness();
+  if (showcase) camX = clamp(showcase.x - viewW() / 2, 0, WORLD - viewW());
+  const q = showcase ? showcase.q : lateness();
   ctx.clearRect(0, 0, W, H);
   drawOutside(q, t);
   drawInterior(q);
@@ -1227,8 +1546,27 @@ function frame(now) {
     ctx.fillRect(0, 0, W, H);
     ctx.restore();
   }
+  petalsOutside(dt, t);
+  drawStage(t);
   fx.update(dt, state.started);
   requestAnimationFrame(frame);
+}
+
+/** cherry petals drifting whenever the camera sees outdoors */
+const petals = [];
+function petalsOutside(dt, t) {
+  const outdoors = clamp(((camX + viewW()) - 2700) / 400);
+  const want = Math.round((reduced ? 14 : 55) * outdoors);
+  while (petals.length < want) petals.push({ x: Math.random() * W, y: -20 - Math.random() * H * 0.6, vx: 25 + Math.random() * 35, vy: 25 + Math.random() * 30, r: (3 + Math.random() * 3) * S, rot: Math.random() * 6, spin: Math.random() * 4 - 2, flip: Math.random() * 6 });
+  ctx.fillStyle = 'rgba(255,196,216,0.92)';
+  for (let i = petals.length - 1; i >= 0; i--) {
+    const p = petals[i];
+    p.x += (p.vx + Math.sin(t + i) * 18) * dt; p.y += p.vy * dt; p.rot += p.spin * dt; p.flip += dt * 3;
+    if (p.y > H || p.x > W + 20) { if (petals.length > want) { petals.splice(i, 1); continue; } p.x = Math.random() * W - 60; p.y = -20; }
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.scale(Math.cos(p.flip), 1);
+    ctx.beginPath(); ctx.ellipse(0, 0, p.r, p.r * 0.6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
 }
 
 /* --------------------------------------------------------- start & select */
@@ -1253,7 +1591,7 @@ function buildRoster() {
     b.type = 'button';
     const cv = document.createElement('canvas');
     cv.width = cv.height = px;
-    chibi(cv.getContext('2d'), { x: px * 0.47, y: px * 1.12, k: px / 100, face: 1, look: f.look, t: 0, phase: 0, moving: false, seed: 1, portrait: true });
+    drawPortrait(cv.getContext('2d'), px, px, f.look, { expr: 'normal', t: 1, seed: 1 });
     const name = document.createElement('b');
     name.textContent = f.name;
     const role = document.createElement('small');
@@ -1274,15 +1612,16 @@ async function pick(f) {
   // the whole squad gathers in the classroom for the pact
   friendsHere = FRIENDS.filter((x) => x !== f).map((x, i) => ({ f: x, x: 90 + i * 62 + (i > 4 ? 130 : 0), face: i % 2 ? -1 : 1 }));
   updateHud();
+  await introCard(f, `${f.role} · our protagonist`);
   await eyecatch();
   const me = f.name;
   await say('', 'Five days before graduation. Class 12-A, lunch break.');
   await say(other('Ghanim', 'Lindan'), 'Alright, everyone. The pact. Say it with me.');
-  await say(other('Ghiffy', 'Arkan'), 'EVERYONE GETS A CRUSH BEFORE COLLEGE!');
+  await say(other('Ghiffy', 'Arkan'), 'EVERYONE GETS A CRUSH BEFORE COLLEGE!', 'happy', 'shock');
   await say(other('Aboi', 'Zubair'), 'And whoever doesn’t…');
-  await say(other('Hamzah', 'Qai'), '…treats the whole squad to bakso. Extra meatballs.');
+  await say(other('Hamzah', 'Qai'), '…treats the whole squad to bakso. Extra meatballs.', 'smug');
   await say(other('Lindan', 'Nizam'), `${me}, you go first. Don’t make us eat for free. …Actually, do.`);
-  await say(me, '…Why does this feel like a trap?');
+  await say(me, '…Why does this feel like a trap?', 'annoyed', 'sweat');
   await say('', 'Friends give advice for free. Each talk with a crush (♥) takes your whole lunch break or afternoon. On Friday afternoon, you confess.');
   closeDialog();
   placeFriends();
@@ -1292,7 +1631,6 @@ async function pick(f) {
 $('start').addEventListener('click', (e) => {
   e.currentTarget.blur();
   $('intro').classList.add('gone');
-  $('select').hidden = false;
   $('sound').hidden = false;
   song.start();
   track.play().then(() => fadeTrack(0.65)).catch(() => {
@@ -1301,6 +1639,7 @@ $('start').addEventListener('click', (e) => {
     song.ctx = null;
     song.start();
   });
+  opening().then(() => { $('select').hidden = false; showcase = null; });
 });
 
 const soundBtn = $('sound');

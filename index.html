@@ -36,6 +36,39 @@
     <p class="ec-slot"></p>
   </div>
 
+  <!-- the close-ups during conversations -->
+  <div id="stage" class="stage" hidden aria-hidden="true">
+    <canvas id="por-left" class="por left"></canvas>
+    <canvas id="por-right" class="por right"></canvas>
+  </div>
+  <canvas id="lines" class="lines" aria-hidden="true"></canvas>
+
+  <!-- character introduction card -->
+  <div id="card" class="card" hidden aria-live="polite">
+    <div class="card-band"></div>
+    <canvas id="card-por" class="card-por"></canvas>
+    <div class="card-text">
+      <p class="card-kana" lang="ja"></p>
+      <h2 class="card-name"></h2>
+      <p class="card-role"></p>
+    </div>
+  </div>
+
+  <!-- opening -->
+  <div id="op" class="op" hidden>
+    <p class="op-line"></p>
+    <div class="op-title">
+      <p class="kana" lang="ja">卒業までに恋をしろ！</p>
+      <h1 class="logo title">Get a Crush<br /><span class="heart">♥</span> Before College</h1>
+    </div>
+    <p class="op-skip">click to skip</p>
+  </div>
+
+  <!-- end credits -->
+  <div id="credits" class="credits" hidden><div class="roll"></div></div>
+
+  <div class="grain" aria-hidden="true"></div>
+
   <!-- dialogue -->
   <div id="dialog" class="dialog" hidden>
     <div class="dialog-name"></div>
