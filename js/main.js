@@ -1464,10 +1464,16 @@ async function opening() {
     const old = [...reel.children].slice(0, -2);
     old.forEach((o) => o.remove());
   };
-  const beats = [['Seven days before college.', 'kirana'], ['Eleven friends.', 'hana'], ['One pact.', 'nayla'], ['', 'sekar']];
+  // the Dreamina trailer clip opens the reel
+  const clip = document.createElement('video');
+  Object.assign(clip, { src: './art/trailer.mp4', muted: true, playsInline: true, autoplay: true, preload: 'auto' });
+  clip.className = 'on';
+  reel.append(clip);
+  clip.play().catch(() => {});
+  const beats = [['Seven days before college.', null], ['Eleven friends.', null], ['One pact.', 'nayla'], ['', 'kirana']];
   for (const [b, img] of beats) {
     if (skip) break;
-    shot(img);
+    if (img) shot(img);
     if (!b) { await wait(reduced ? 500 : 900); continue; }
     lineEl.textContent = b;
     lineEl.classList.remove('show'); void lineEl.offsetWidth; lineEl.classList.add('show');

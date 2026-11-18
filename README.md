@@ -49,6 +49,7 @@ A static site with no build step.
 - `art/`: the illustrated character portraits (made in Dreamina, backgrounds removed)
 - `art/sprite/`: the walking chibi sprites for all 18 characters (Dreamina, backgrounds removed)
 - `art/ending/`: one illustrated ending scene per girl (Dreamina), also used in the opening trailer
+- `art/trailer.mp4`: the Dreamina-animated trailer clip that opens the game
 - `js/portrait.js`: the anime close-up portraits and their expressions
 - `js/ending.js`: the hill-at-sunset ending with the title card and fireworks
 - `js/audio.js`: chimes and dialogue blips (and a built-in song as a fallback)
