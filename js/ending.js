@@ -13,6 +13,7 @@ let canvas, ctx, fx, song;
 let gifts = {};
 // colours for the two figures (hex); anything missing keeps the default
 let looks = {};
+let cg = null, cgNight = false; // an illustrated ending scene, when there is one
 let personal = null; // [her line, his line] that belong to whoever you played
 const toHex = (r, g, b) => '#' + [r, g, b].map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
 /** the same colour under a night sky */
@@ -828,6 +829,29 @@ function frame(now) {
   look.y += (look.ty - look.y) * Math.min(1, dt * 2);
 
   ctx.clearRect(0, 0, W, H);
+  if (cg && cg.complete && cg.naturalWidth) {
+    // the illustrated scene, with a slow anime-film camera push and the light fading to night
+    const z = 1.06 + Math.min(T, 60) * 0.0025;
+    const k = Math.max(W / cg.naturalWidth, H / cg.naturalHeight) * z;
+    const dw = cg.naturalWidth * k, dh = cg.naturalHeight * k;
+    ctx.drawImage(cg, (W - dw) / 2 - look.x * 12, (H - dh) * 0.55 - look.y * 8, dw, dh);
+    if (!cgNight && p > 0) {
+      ctx.fillStyle = `rgba(16,18,70,${p * 0.5})`;
+      ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = '#ffffff';
+      for (const s2 of stars) { if (s2.y > 0.4) continue; ctx.globalAlpha = p * 0.8 * (0.4 + 0.6 * Math.sin(t * 1.3 + s2.s * 7) ** 2); ctx.fillRect(s2.x * W, s2.y * H, 2, 2); }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+    drawFireworks(dt);
+    drawComet(T);
+    updatePetals(dt, t, p, 0);
+    fx.update(dt, started);
+    requestAnimationFrame(frame);
+    return;
+  }
   // three parallax layers: sky, distance, foreground
   ctx.save();
   ctx.translate(-look.x * 6, -look.y * 4);
@@ -879,6 +903,7 @@ export function startEnding(opts) {
   gifts = opts.gifts || {};
   looks = opts.looks || {};
   personal = opts.personal || null;
+  if (opts.cg) { cg = new Image(); cg.src = opts.cg; cgNight = !!opts.cgNight; }
   if (opts.names) [NAME_A, NAME_B] = opts.names;
   buildAfter();
   buildSubs();

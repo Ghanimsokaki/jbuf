@@ -47,6 +47,8 @@ A static site with no build step.
 - `index.html`, `style.css`: the page, character select, dialogue box, HUD and touch controls
 - `js/main.js`: the cast, the school, the scenes, the days and the endings
 - `art/`: the illustrated character portraits (made in Dreamina, backgrounds removed)
+- `art/sprite/`: the walking chibi sprites for all 18 characters (Dreamina, backgrounds removed)
+- `art/ending/`: one illustrated ending scene per girl (Dreamina), also used in the opening trailer
 - `js/portrait.js`: the anime close-up portraits and their expressions
 - `js/ending.js`: the hill-at-sunset ending with the title card and fireworks
 - `js/audio.js`: chimes and dialogue blips (and a built-in song as a fallback)

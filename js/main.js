@@ -904,6 +904,29 @@ function chibi(c, o) {
   c.restore();
 }
 
+/** the illustrated walking sprites in art/sprite/, with the code-drawn chibi as a fallback */
+const SPRITE = {};
+function spriteFor(name) {
+  const key = name.toLowerCase();
+  if (!(key in SPRITE)) { const im = new Image(); im.src = `./art/sprite/${key}.webp`; SPRITE[key] = im; }
+  return SPRITE[key];
+}
+function walker(name, o) {
+  const im = spriteFor(name);
+  if (!im.complete || !im.naturalWidth) return chibi(ctx, o);
+  const h = 128 * o.k, w = (im.naturalWidth * h) / im.naturalHeight;
+  const bob = o.moving ? Math.abs(Math.sin(o.phase)) * 5 * o.k : Math.sin(o.t * 2 + o.seed) * 1.2 * o.k;
+  const hop = o.talking ? Math.abs(Math.sin(o.t * 9)) * 3 * o.k : 0;
+  ctx.save();
+  ctx.translate(o.x, o.y);
+  ctx.fillStyle = 'rgba(40,20,50,0.2)';
+  ctx.beginPath(); ctx.ellipse(0, 0, w * 0.32, 5 * o.k, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.rotate(o.moving ? Math.sin(o.phase) * 0.05 : 0);
+  ctx.scale(o.face, 1);
+  ctx.drawImage(im, -w / 2, -h - bob - hop, w, h);
+  ctx.restore();
+}
+
 /* ------------------------------------------------------------- prompts */
 let near = null;
 function interactables() {
@@ -1430,9 +1453,22 @@ async function opening() {
   const onSkip = () => { skip = true; };
   op.addEventListener('click', onSkip);
   window.addEventListener('keydown', onSkip, { once: true });
-  const beats = ['Seven days before college.', 'Eleven friends.', 'One pact.'];
-  for (const b of beats) {
+  // the trailer reel: the illustrated scenes, each with a slow camera move
+  const reel = op.querySelector('.op-reel');
+  const shot = (name) => {
+    const im = document.createElement('img');
+    im.src = `./art/ending/${name}.webp`;
+    im.alt = '';
+    reel.append(im);
+    requestAnimationFrame(() => im.classList.add('on'));
+    const old = [...reel.children].slice(0, -2);
+    old.forEach((o) => o.remove());
+  };
+  const beats = [['Seven days before college.', 'kirana'], ['Eleven friends.', 'hana'], ['One pact.', 'nayla'], ['', 'sekar']];
+  for (const [b, img] of beats) {
     if (skip) break;
+    shot(img);
+    if (!b) { await wait(reduced ? 500 : 900); continue; }
     lineEl.textContent = b;
     lineEl.classList.remove('show'); void lineEl.offsetWidth; lineEl.classList.add('show');
     await wait(reduced ? 900 : 1900);
@@ -1446,6 +1482,7 @@ async function opening() {
   op.classList.add('out');
   await wait(600);
   op.hidden = true;
+  op.querySelector('.op-reel').innerHTML = '';
 }
 
 /** end credits rolling over the night sky */
@@ -1635,6 +1672,8 @@ function happyEnd(c) {
       looks: { boyHair: L.hair, boyHairHi: L.hairHi, jacket: plain ? '#5a6a9a' : L.top, jacketSh: plain ? '#47557f' : L.topSh, ...c.end },
       gifts: { ribbon: c.id === 'alya' },
       personal: [state.me.end.b, state.me.end.a],
+      cg: `./art/ending/${c.id}.webp`,
+      cgNight: c.id === 'nayla',
     });
     fade.classList.remove('on');
     // after the title card: the credits roll, then how everyone did
@@ -1738,14 +1777,14 @@ function frame(now) {
 
   for (const p of friendsHere) {
     const face = Math.abs(state.x - p.x) < 200 ? (state.x < p.x ? -1 : 1) : p.face;
-    chibi(ctx, { x: sx(p.x), y: sy(0), k: S, face, look: p.f.look, t, phase: 0, moving: false, talking: speaking === p.f.name, seed: p.x });
+    walker(p.f.name, { x: sx(p.x), y: sy(0), k: S, face, look: p.f.look, t, phase: 0, moving: false, talking: speaking === p.f.name, seed: p.x });
   }
   for (const c of Object.values(CRUSHES)) {
     const x = crushX(c);
     const face = Math.abs(state.x - x) < 220 ? (state.x < x ? -1 : 1) : -1;
-    chibi(ctx, { x: sx(x), y: sy(0), k: S, face, look: c.look, t, phase: 0, moving: false, talking: speaking === c.name, seed: x, blush: state.aff[c.id] >= 4 && Math.abs(state.x - x) < 140 });
+    walker(c.name, { x: sx(x), y: sy(0), k: S, face, look: c.look, t, phase: 0, moving: false, talking: speaking === c.name, seed: x, blush: state.aff[c.id] >= 4 && Math.abs(state.x - x) < 140 });
   }
-  if (state.me) chibi(ctx, { x: sx(state.x), y: sy(0), k: S, face: state.face, look: state.me.look, t, phase: state.phase, moving: state.moving, talking: speaking === state.me.name, seed: 3 });
+  if (state.me) walker(state.me.name, { x: sx(state.x), y: sy(0), k: S, face: state.face, look: state.me.look, t, phase: state.phase, moving: state.moving, talking: speaking === state.me.name, seed: 3 });
 
   // hearts over crushes with something new to say, names over people nearby
   if (state.started && !state.ended) {
@@ -1883,6 +1922,6 @@ $('again').addEventListener('click', () => location.reload());
 
 window.addEventListener('resize', resize);
 resize();
-for (const n of [...FRIENDS.map((f) => f.name), ...Object.values(CRUSHES).map((c) => c.name)]) artFor(n);
+for (const n of [...FRIENDS.map((f) => f.name), ...Object.values(CRUSHES).map((c) => c.name)]) { artFor(n); spriteFor(n); }
 buildRoster();
 requestAnimationFrame(frame);
