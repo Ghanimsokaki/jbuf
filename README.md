@@ -11,27 +11,27 @@ squad to bakso.
 ## How it plays
 
 1. **Pick who you are:** Ghanim, Ghiffy, Lindan, Arkan, Dyas, Zubair, Ahza,
-   Aboi, Qai, Hamzah or Nizam. The other ten are around school.
-2. **Walk around school:** the classroom, hallway, library, canteen, courtyard
-   and rooftop.
-3. **Talk to your friends** for advice. That's free, and each of them has a tip
-   about one of the crushes.
-4. **Talk to the seven classmates** who might become your crush — Hana (transfer
-   student from Japan, classroom window seat), Putri (drama club star, hallway),
-   Alya (class president, library), Rania (canteen chef), Kirana (track ace,
-   courtyard), Nayla (astronomy club, rooftop telescope) and Sekar (quiet
-   artist, rooftop). Each has three scenes with a choice; good
-   answers fill her hearts. Every scene uses up your lunch break or your
-   afternoon, so you only get 10 over the week.
-5. **Friday afternoon:** your top crush waits under the cherry tree. Confess.
-   Enough hearts and you get the anime ending; otherwise it's the Bakso End.
+   Aboi, Qai, Hamzah or Nizam. The other ten are around school and town.
+2. **Seven days until college.** Each day lasts **nine real minutes**, from
+   07:00 to 21:00, with the sky going from morning to sunset to night. Use the
+   ⏩ button to skip an hour.
+3. **School until 15:00:** the classroom, hallway, library, canteen, courtyard
+   and rooftop. **After school everyone heads into town:** the Kopi Senja café,
+   the Game Center, the bookstore, the riverside park and the Grand Bintang
+   Hotel.
+4. **Talk to anyone, anytime.** Seven classmates might become your crush —
+   Hana, Putri, Alya, Rania, Kirana, Nayla and Sekar — and each one goes
+   somewhere different after school. A ♥ over a girl means she has a new
+   moment for you today (three each), with choices that fill her hearts.
+   Friends give advice about them.
+5. **Sunday night is prom** at the Grand Bintang Hotel. Your top crush waits on
+   the balcony. Confess: enough hearts and you get the anime ending; otherwise
+   it's the Bakso End.
 6. **Everyone has their own ending.** Whoever you play gets a personal
-   confession move and their own lines in the ending — Ghanim the coder shows
-   her a website whose NO button runs away, Ghiffy the gamer asks for a Player 2,
-   Lindan the meteorologist gives a forecast, Dyas the footballer juggles a ball
-   for her, and so on. The pact results show how each of the others did.
+   confession move and their own lines in the ending, and the pact results
+   show how each of the others did.
 
-Controls: `←` `→` (or `A` `D`) to walk, `E` / `Space` / `Enter` to talk and
+Controls: `←` `→` (or `A` `D`) to walk, hold `Shift` to run, `E` / `Space` / `Enter` to talk and
 continue, `1`–`3` to answer. On phones, use the on-screen buttons and tap the
 dialogue box.
 

@@ -103,12 +103,12 @@
     <div class="intro-inner">
       <p class="kana" lang="ja">卒業までに恋をしろ！</p>
       <h1 class="logo title">Get a Crush<br /><span class="heart">♥</span> Before College</h1>
-      <p class="blurb">Five days until graduation. The squad made a pact:<br /><b>everyone gets a crush before college</b> — or treats everyone to bakso.</p>
+      <p class="blurb">Seven days until college. The squad made a pact:<br /><b>everyone gets a crush before college</b> — or treats everyone to bakso.</p>
       <button id="start" class="start" type="button">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
         Start
       </button>
-      <p class="keys"><kbd>←</kbd><kbd>→</kbd> walk &nbsp;·&nbsp; <kbd>E</kbd> / <kbd>Space</kbd> talk &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>3</kbd> answer</p>
+      <p class="keys"><kbd>←</kbd><kbd>→</kbd> walk &nbsp;·&nbsp; hold <kbd>Shift</kbd> to run &nbsp;·&nbsp; <kbd>E</kbd> / <kbd>Space</kbd> talk &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>3</kbd> answer</p>
     </div>
   </section>
 
@@ -129,6 +129,9 @@
     <button id="btn-right" class="pad-btn" type="button" aria-label="Walk right">
       <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
+    <button id="btn-run" class="pad-btn run" type="button" aria-label="Run">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M5 12h9M10 7l5 5-5 5M15 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <button id="btn-talk" class="pad-btn talk" type="button" aria-label="Talk">
       <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="9" cy="10.5" r="1.2" fill="currentColor"/><circle cx="12" cy="10.5" r="1.2" fill="currentColor"/><circle cx="15" cy="10.5" r="1.2" fill="currentColor"/></svg>
     </button>
@@ -138,6 +141,9 @@
     <button id="sound" class="icon-btn" type="button" aria-label="Mute music" aria-pressed="true" hidden>
       <svg class="on" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4zM16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <svg class="off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4zM17 9l5 6M22 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="skip" class="icon-btn" type="button" aria-label="Skip ahead one hour" title="Skip 1 hour" hidden>
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 6l8 6-8 6zM12 6l8 6-8 6z" fill="currentColor"/></svg>
     </button>
     <button id="replay" class="icon-btn" type="button" aria-label="Play again" hidden>
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>

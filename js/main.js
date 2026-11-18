@@ -1,11 +1,12 @@
 /**
  * Get a Crush Before College
  *
- * Five days until graduation. The squad made a pact: everyone gets a crush
+ * Seven days until college. The squad made a pact: everyone gets a crush
  * before college, or treats everyone to bakso. Pick which friend you are,
  * walk around school, talk to your friends for advice and to four classmates
  * who might become your crush. Every talk with a crush uses up a lunch break
- * or an afternoon. On the last afternoon you confess under the cherry tree.
+ * Each day is a nine-minute clock from morning to night; after school the
+ * town opens up. On Sunday night, at the prom, you confess.
  *
  * Everything is drawn on a 2D canvas in a cel-shaded anime style.
  */
@@ -63,7 +64,7 @@ const look = (o) => ({ skin: '#f2c6a8', hairHi: '#5a4a6e', top: SHIRT, topSh: SH
 
 /** the squad: whoever you pick is you, the rest are around school */
 const FRIENDS = [
-  { name: 'Ghanim', fates: ['built a dating app for the squad. It matched him with someone ✓', 'is still debugging his feelings. Estimated fix: college'], role: 'the coder', look: look({ hair: '#1e1a28', style: 'parted', glasses: true, laptop: true, skin: '#f0c4a4' }),
+  { name: 'Ghanim', fates: ['built a dating app for the squad. It matched him with someone ✓', 'is still debugging his feelings. Estimated fix: college'], role: 'the coder', look: look({ hair: '#1e1a28', style: 'short', glasses: true, laptop: true, young: true, skin: '#f0c4a4' }),
     line: 'I wrote a script that tracks the pact. You are currently in last place.',
     hint: ['alya', 'Debug tip: Alya hates flattery. Be useful, not smooth.'],
     end: {
@@ -75,7 +76,7 @@ const FRIENDS = [
       bakso: 'Ghanim’s confession website crashed in production. He’s fixing the bug at the bakso stall. His treat.',
     } },
   { name: 'Ghiffy', fates: ['found a Player 2 at the prom ✓', 'is speedrunning college instead. Current record: pending'], role: 'the gamer', look: look({ hair: '#5a3a2a', hairHi: '#8a5a40', style: 'spiky', headphones: '#4ad07a', top: '#e8504f', topSh: '#c03a3a', skin: '#e8b48e' }),
-    line: 'Five days left? That’s like… one boss fight per day. Easy.',
+    line: 'Seven days left? That’s like… one boss fight per day. Easy.',
     hint: ['kirana', 'Kirana respects people who never rage-quit. Keep going, bro!'],
     end: {
       option: 'Hand her a controller: “Player 2… want to join?”',
@@ -96,7 +97,7 @@ const FRIENDS = [
       epilogue: 'Lindan’s forecast was right again. Clear skies, all the way to college.',
       bakso: 'Lindan forecast sunshine. It poured. He’s buying the bakso, umbrellas included.',
     } },
-  { name: 'Arkan', fates: ['asked someone out at the finish line. She said yes ✓', 'is training for love. Day 1 of 365'], role: 'the athlete', look: look({ hair: '#141018', style: 'buzz', top: '#2f7fd8', topSh: '#2160aa', skin: '#d9a07a' }),
+  { name: 'Arkan', fates: ['asked someone out at the finish line. She said yes ✓', 'is training for love. Day 1 of 365'], role: 'the athlete', look: look({ hair: '#1a1424', hairHi: '#4a4060', style: 'spiky', top: '#2f7fd8', topSh: '#2160aa', skin: '#d9a07a' }),
     line: 'Want to run laps with me? …No? Your loss. Cardio is love.',
     hint: ['kirana', 'Kirana hurt her knee before the last meet. Be kind, not a coach.'],
     end: {
@@ -137,7 +138,7 @@ const FRIENDS = [
       reply: '…You kept this? …I look happy here. Because you were there.',
       b: 'Are you taking a picture right now?',
       a: 'Of the sky. …You’re in it. Lucky shot.',
-      epilogue: 'Ahza’s best photo of senior year: the two of them, under the cherry tree.',
+      epilogue: 'Ahza’s best photo of senior year: the two of them, on the hotel balcony at prom.',
       bakso: 'Ahza got a great photo of the squad eating bakso. He paid for every bowl in it.',
     } },
   { name: 'Aboi', fates: ['made someone laugh so hard she said yes ✓', 'confessed to the vending machine again. It said “sold out”'], role: 'the joker', look: look({ hair: '#1e1a28', style: 'cap', cap: '#ffcf3f', top: '#f08a3a', topSh: '#c86a28', skin: '#d9a07a' }),
@@ -215,7 +216,7 @@ const perCrush = (v) => Object.fromEntries(CRUSH_IDS.map((id) => [id, v]));
 
 /** a little extra for each friend: their name in katakana, eye colour, and a second tip */
 const EXTRA = {
-  Ghanim: ['ガニム', '#3a3050'], Ghiffy: ['ギフィ', '#7a4a2a'], Lindan: ['リンダン', '#3a6a7a', ['nayla', 'Nayla’s tracking a meteor shower on Friday night. Clear skies, by my forecast.']],
+  Ghanim: ['ガニム', '#3a3050'], Ghiffy: ['ギフィ', '#7a4a2a'], Lindan: ['リンダン', '#3a6a7a', ['nayla', 'Nayla’s tracking a meteor shower on the last night. Clear skies, by my forecast.']],
   Arkan: ['アルカン', '#3a2a20'], Dyas: ['ディアス', '#3a3a6a'], Zubair: ['ズバイル', '#5a3a6a', ['hana', 'Hana’s from Japan. Don’t be weird about anime with her. …I learned that the hard way.']],
   Ahza: ['アフザ', '#4a3020', ['putri', 'I photographed Putri’s rehearsal. She acts confident, but her hands were shaking.']],
   Aboi: ['アボイ', '#3a2a20'], Qai: ['カイ', '#5a4a7a'], Hamzah: ['ハムザ', '#3a4a2a'],
@@ -229,12 +230,17 @@ for (const f of FRIENDS) {
 }
 
 /* ----------------------------------------------------------------- state */
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-const SLOTS = ['Lunch break', 'After school'];
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const LAST_DAY = DAYS.length - 1;
+const DAY_START = 7, DAY_END = 21; // 07:00 to 21:00
+const SECONDS_PER_DAY = 9 * 60; // one day lasts nine real minutes
+const SECONDS_PER_HOUR = SECONDS_PER_DAY / (DAY_END - DAY_START);
+const SCHOOL_OUT = 15, PROM = 18;
+const clockText = (h) => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.floor((h % 1) * 60)).padStart(2, '0')}`;
 const state = {
   me: null, // the friend you play
   x: 400, face: 1, phase: 0, moving: false,
-  day: 0, slot: 0,
+  day: 0, clock: DAY_START,
   aff: perCrush(0),
   scene: perCrush(0), // scenes seen
   seenDay: perCrush(-1),
@@ -244,17 +250,25 @@ const state = {
   busy: true, started: false, ended: false,
   last: null, // crush talked to most recently
 };
-const isFinal = () => state.day === 4 && state.slot === 1;
+const isFinal = () => state.day === LAST_DAY && state.clock >= PROM;
+const afterSchool = () => state.clock >= SCHOOL_OUT;
 
 /* --------------------------------------------------------------- the school */
-const WORLD = 3920;
+const WORLD = 7700;
 const ZONES = [
   ['Classroom 12-A', 0, 800],
   ['Hallway', 800, 1500],
   ['Library', 1500, 2100],
   ['Canteen', 2100, 2700],
   ['Courtyard', 2700, 3400],
-  ['Rooftop', 3400, WORLD + 100],
+  ['Rooftop', 3400, 3920],
+  ['School gate', 3920, 4200],
+  ['Town street', 4200, 4450],
+  ['Kopi Senja café', 4450, 4950],
+  ['Game Center', 4950, 5380],
+  ['Bookstore', 5380, 5760],
+  ['Riverside park', 5760, 6760],
+  ['Grand Bintang Hotel', 6760, WORLD + 100],
 ];
 const zoneAt = (x) => ZONES.find(([, a, b]) => x >= a && x < b)?.[0] || 'Rooftop';
 const SAKURA_X = 3150;
@@ -277,19 +291,25 @@ const viewW = () => W / S;
 const sx = (x) => (x - camX) * S;
 const sy = (h) => baseY() - h * S;
 /** how late in the day it looks: 0 midday, 1 sunset */
-const lateness = () => (state.slot === 0 ? 0 : state.day === 4 ? 1 : 0.82);
+const smoothstep = (a, b, v) => { const k = clamp((v - a) / (b - a)); return k * k * (3 - 2 * k); };
+const lateness = () => smoothstep(14, 18.2, state.clock);
+const nightness = () => smoothstep(18.2, 20.5, state.clock);
 
 /* ---------------------------------------------------------------- the people */
-let friendsHere = []; // { f, x, face } for this time slot
+let friendsHere = []; // { f, x, face } for this part of the day
 function placeFriends() {
-  const r = seeded(state.day * 7 + state.slot * 3 + 1);
-  const spots = [180, 330, 560, 700, 950, 1120, 1330, 1600, 2000, 2200, 2620, 2800, 3300, 3480, 3850];
+  const r = seeded(state.day * 7 + (afterSchool() ? 3 : 0) + 1);
+  const spots = afterSchool()
+    ? [3880, 4100, 4250, 4380, 4960, 5150, 5300, 5420, 5800, 6080, 6450, 6720, 6900, 7200]
+    : [180, 330, 560, 700, 950, 1120, 1330, 1600, 2000, 2200, 2620, 2800, 3300, 3480, 3850];
   const taken = Object.values(CRUSHES).map((c) => crushX(c));
   const free = spots.filter((s) => taken.every((b) => Math.abs(b - s) > 140));
   for (let i = free.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [free[i], free[j]] = [free[j], free[i]]; }
   friendsHere = FRIENDS.filter((f) => f !== state.me).map((f, i) => ({ f, x: free[i % free.length] + (i >= free.length ? 60 : 0), face: r() < 0.5 ? 1 : -1 }));
 }
-const crushX = (c) => (isFinal() && c.id === topCrush()?.id ? SAKURA_X + 60 : c.x);
+const TOWN_SPOT = { hana: 4640, rania: 4820, alya: 5560, kirana: 5960, sekar: 6290, nayla: 6560, putri: 7000 };
+const HOTEL_BALCONY = 7460;
+const crushX = (c) => (isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : afterSchool() ? TOWN_SPOT[c.id] : c.x);
 function topCrush() {
   let best = null;
   for (const c of Object.values(CRUSHES)) {
@@ -403,8 +423,8 @@ function drawInterior(q) {
   // classroom
   rect(110, 120, 360, 150, '#2f5a46');
   rect(104, 114, 372, 6, '#a8865a');
-  const left = 5 - state.day;
-  text(left > 1 ? `${left} days until graduation!` : 'Graduation is TOMORROW!', 290, 225, 22, '#f4f1e6');
+  const left = DAYS.length - state.day;
+  text(left > 1 ? `${left} days until college!` : 'PROM TONIGHT!', 290, 225, 22, '#f4f1e6');
   text('PACT: a crush before college', 290, 185, 14, '#ffd98a', 700);
   text('♥', 430, 150, 22, '#ff9fc2');
   for (const wx of [520, 650]) windowPane(wx, 130, 110, 140, q);
@@ -423,7 +443,7 @@ function drawInterior(q) {
   rect(1200, 150, 160, 110, '#c99a6a');
   rect(1206, 156, 148, 98, '#f6e6c6');
   text('PROM', 1280, 225, 18, '#e8417a');
-  text('Friday night', 1280, 200, 12, '#3a2a50', 700);
+  text('Sun · Grand Bintang', 1280, 200, 11, '#3a2a50', 700);
   text('♥ ♥ ♥', 1280, 175, 12, '#ff7aa8');
   windowPane(1390, 130, 90, 140, q);
   // the drama club poster
@@ -501,7 +521,7 @@ function drawCourtyardAndRoof(q, t) {
   ctx.fillStyle = mix('#5aa050', '#3f6a44', q);
   ctx.fillRect(sx(2700), sy(-14), 700 * S, H);
   ctx.fillStyle = mix('#c9c2bc', '#c4a69a', q);
-  ctx.fillRect(sx(3400), sy(0), (WORLD - 3400 + 200) * S, H);
+  ctx.fillRect(sx(3400), sy(0), 520 * S, H);
   rect(3400, 0, 12, 260, mix('#d8ccb8', '#c8a890', q));
   rect(3412, 0, 70, 120, mix('#8a9aaa', '#7a6a8a', q));
   text('ROOF', 3447, 135, 12, mix('#5a6a7a', '#6a5a7a', q), 800);
@@ -522,10 +542,147 @@ function drawCourtyardAndRoof(q, t) {
   ctx.strokeStyle = mix('#7a8a9a', '#5a4a6a', q, 0.9);
   ctx.lineWidth = 1.2;
   ctx.beginPath();
-  for (let x = 3480; x < WORLD + 120; x += 14) { ctx.moveTo(sx(x), sy(0)); ctx.lineTo(sx(x + 30), sy(100)); ctx.moveTo(sx(x + 30), sy(0)); ctx.lineTo(sx(x), sy(100)); }
+  for (let x = 3480; x < 3900; x += 14) { ctx.moveTo(sx(x), sy(0)); ctx.lineTo(sx(x + 30), sy(100)); ctx.moveTo(sx(x + 30), sy(0)); ctx.lineTo(sx(x), sy(100)); }
   ctx.stroke();
   ctx.lineWidth = 4 * S;
-  ctx.beginPath(); ctx.moveTo(sx(3480), sy(100)); ctx.lineTo(sx(WORLD + 150), sy(100)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(sx(3480), sy(100)); ctx.lineTo(sx(3910), sy(100)); ctx.stroke();
+}
+
+/* ------------------------------------------------------ draw: the town */
+const TOWN = 3920; // everything past here is outside the school gate
+function storefront(x, w, h, wall, sign, signCol, awning, light, n) {
+  rect(x, 0, w, h, wall);
+  rect(x, h - 10, w, 10, darker(wall, 0.8));
+  // big shop window, warm when the lights come on
+  rect(x + 16, 10, w - 32, 110, '#2a2238');
+  ctx.fillStyle = `rgba(255,${Math.round(220 - 30 * n)},${Math.round(160 - 40 * n)},${0.35 + n * 0.55})`;
+  ctx.fillRect(sx(x + 20), sy(116), (w - 40) * S, 102 * S);
+  if (awning) {
+    const k = Math.max(4, Math.round(w / 40));
+    for (let i = 0; i < k; i++) {
+      ctx.fillStyle = i % 2 ? '#ffffff' : awning;
+      const ax = x - 6 + (i * (w + 12)) / k, aw = (w + 12) / k;
+      ctx.beginPath();
+      ctx.moveTo(sx(ax), sy(150)); ctx.lineTo(sx(ax + aw), sy(150)); ctx.lineTo(sx(ax + aw), sy(128));
+      ctx.quadraticCurveTo(sx(ax + aw / 2), sy(120), sx(ax), sy(128)); ctx.fill();
+    }
+  }
+  ctx.fillStyle = signCol;
+  ctx.beginPath(); ctx.roundRect(sx(x + w * 0.12), sy(h - 18), w * 0.76 * S, 34 * S, 8 * S); ctx.fill();
+  text(sign, x + w / 2, h - 35, 16, light || '#ffffff');
+  if (n > 0.2) { // a soft glow spilling onto the pavement
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(sx(x + w / 2), sy(40), 0, sx(x + w / 2), sy(40), w * 0.7 * S);
+    g.addColorStop(0, `rgba(255,200,140,${0.22 * n})`); g.addColorStop(1, 'rgba(255,180,120,0)');
+    ctx.fillStyle = g; ctx.fillRect(sx(x - w * 0.2), sy(200), w * 1.4 * S, 240 * S);
+    ctx.restore();
+  }
+}
+function streetLamp(x, n) {
+  ctx.strokeStyle = '#3a3448'; ctx.lineWidth = 5 * S;
+  ctx.beginPath(); ctx.moveTo(sx(x), sy(0)); ctx.lineTo(sx(x), sy(200)); ctx.quadraticCurveTo(sx(x), sy(220), sx(x + 24), sy(214)); ctx.stroke();
+  ctx.fillStyle = n > 0.1 ? `rgba(255,230,160,${0.5 + n * 0.5})` : '#d8d0c8';
+  ctx.beginPath(); ctx.arc(sx(x + 26), sy(208), 8 * S, 0, Math.PI * 2); ctx.fill();
+  if (n > 0.1) {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(sx(x + 26), sy(208), 0, sx(x + 26), sy(208), 120 * S);
+    g.addColorStop(0, `rgba(255,220,150,${0.45 * n})`); g.addColorStop(1, 'rgba(255,200,120,0)');
+    ctx.fillStyle = g; ctx.fillRect(sx(x - 100), sy(330), 250 * S, 250 * S);
+    ctx.restore();
+  }
+}
+function sakuraAt(x, scale, q, t) {
+  ctx.save();
+  ctx.translate(sx(x), sy(0));
+  ctx.scale(S * scale, S * scale);
+  ctx.fillStyle = '#6a4a44';
+  ctx.beginPath(); ctx.moveTo(-14, 0); ctx.bezierCurveTo(-8, -70, -18, -130, 2, -190); ctx.lineTo(12, -186); ctx.bezierCurveTo(4, -130, 12, -70, 16, 0); ctx.fill();
+  const sway = Math.sin(t * 0.8 + x) * 3;
+  for (const [col, ox, oy, rs] of [[mix('#ea8ab2', '#e07aa6', q), 0, 0, 1], [mix('#ffc6db', '#ffb8d2', q), -0.14, -0.18, 0.82], [mix('#fff0f5', '#ffe4ef', q), -0.28, -0.36, 0.45]]) {
+    ctx.fillStyle = col;
+    for (const [bx, by, br] of blossoms) { ctx.beginPath(); ctx.arc(bx + sway + br * ox, by + br * oy, br * rs, 0, Math.PI * 2); ctx.fill(); }
+  }
+  ctx.restore();
+}
+
+function drawTown(q, n, t) {
+  if (camX + viewW() < TOWN - 50) return;
+  // school gate
+  rect(TOWN, 0, 40, 260, '#c9c2bc'); rect(TOWN + 230, 0, 40, 260, '#c9c2bc');
+  rect(TOWN - 10, 250, 290, 34, '#3a5aa8');
+  text('SMA BINTANG', TOWN + 135, 267, 16, '#ffffff');
+  ctx.strokeStyle = '#7a8090'; ctx.lineWidth = 3 * S; ctx.beginPath();
+  for (let x = TOWN + 50; x < TOWN + 230; x += 18) { ctx.moveTo(sx(x), sy(0)); ctx.lineTo(sx(x), sy(90)); }
+  ctx.stroke();
+  // bus stop
+  rect(4300, 0, 6, 150, '#5a6070'); rect(4300, 140, 110, 10, '#3a5aa8'); rect(4404, 0, 6, 150, '#5a6070');
+  text('BUS', 4355, 125, 12, '#3a5aa8');
+  // shops
+  storefront(4460, 470, 230, '#f2e2c8', 'Kopi Senja ☕', '#6a4228', '#b8704a', '#ffe9c4', n);
+  storefront(4960, 400, 250, '#4a3a7a', 'GAME CENTER', '#ff5f96', null, '#ffffff', Math.max(n, 0.5));
+  storefront(5390, 360, 220, '#e8eef7', 'Toko Buku', '#3a6ab0', '#6a9ae6', '#ffffff', n);
+  // claw machines in the arcade window
+  for (const [i, col] of ['#ff9fc2', '#9fe0ff', '#ffe08a'].entries()) { rect(5000 + i * 110, 10, 80, 100, col); rect(5010 + i * 110, 40, 60, 60, 'rgba(255,255,255,0.6)'); }
+  // books in the bookstore window
+  for (let i = 0; i < 18; i++) rect(5410 + i * 18, 12, 14, 40 + (i * 7) % 30, ['#e8504f', '#3a5aa8', '#ffcf3f', '#4f8a46', '#7a5bb5'][i % 5]);
+  // riverside park
+  ctx.fillStyle = mix('#7cc06a', '#5d8a52', q);
+  ctx.fillRect(sx(5770), sy(0), 990 * S, 14 * S);
+  ctx.fillStyle = mix('#7ac0e8', '#c88aa8', q, 0.85);
+  ctx.fillRect(sx(5770), sy(-60), 990 * S, 40 * S); // the river beyond the path
+  sakuraAt(5880, 0.8, q, t); sakuraAt(6420, 1.0, q, t);
+  rect(6200, 0, 6, 24, '#4a3a34'); rect(6280, 0, 6, 24, '#4a3a34'); rect(6192, 22, 102, 8, '#a86a44');
+  // Nayla's telescope by the river
+  ctx.strokeStyle = '#4a4458'; ctx.lineWidth = 3 * S;
+  ctx.beginPath(); ctx.moveTo(sx(6600), sy(0)); ctx.lineTo(sx(6614), sy(52)); ctx.lineTo(sx(6628), sy(0)); ctx.stroke();
+  ctx.save(); ctx.translate(sx(6614), sy(58)); ctx.rotate(-0.6); ctx.fillStyle = '#e8eef7'; ctx.fillRect(-26 * S, -6 * S, 52 * S, 12 * S); ctx.restore();
+  // the hotel
+  rect(6780, 0, 820, 560, mix('#efe4d0', '#d8b8a0', q));
+  for (let fl = 0; fl < 6; fl++) for (let i = 0; i < 9; i++) {
+    const lit = n > 0 && ((fl * 9 + i) * 37) % 10 < 7;
+    rect(6820 + i * 86, 150 + fl * 66, 50, 40, lit ? `rgba(255,214,140,${0.6 + n * 0.4})` : mix('#9fd0ff', '#ffc89a', q));
+  }
+  rect(7060, 0, 260, 130, '#3a2a20');
+  rect(7080, 0, 220, 110, n > 0 ? 'rgba(255,214,140,0.9)' : '#c8a878');
+  rect(7020, 126, 340, 16, '#c9a24a');
+  text('GRAND BINTANG HOTEL', 7190, 545, 22, '#c9a24a');
+  rect(6900, 60, 140, 80, '#ff5f96');
+  text('PROM NIGHT', 6970, 116, 13, '#ffffff');
+  text('Sun · 7pm', 6970, 92, 11, '#ffffff', 700);
+  text('♥', 6970, 72, 14, '#ffffff');
+  // balcony with fairy lights
+  rect(7360, 120, 220, 10, '#c9a24a');
+  for (let i = 0; i < 12; i++) {
+    ctx.fillStyle = `rgba(255,${200 + (i % 3) * 20},150,${0.4 + n * 0.6 * (0.6 + 0.4 * Math.sin(t * 3 + i))})`;
+    ctx.beginPath(); ctx.arc(sx(7370 + i * 18), sy(150 + Math.sin(i) * 6), 3.5 * S, 0, Math.PI * 2); ctx.fill();
+  }
+  for (const x of [4240, 4950, 5770, 6150, 6740, 7620]) streetLamp(x, n);
+  // pavement and road through town
+  const a = Math.max(0, sx(TOWN));
+  if (a < W) {
+    ctx.fillStyle = mix('#e9ddd2', '#e2c3b0', q);
+    ctx.fillRect(a, sy(0), W - a, 16 * S);
+    ctx.fillStyle = mix('#c9bab0', '#b89a92', q);
+    ctx.fillRect(a, sy(-16), W - a, 5 * S);
+    ctx.fillStyle = mix('#57586a', '#4a3f5a', q);
+    ctx.fillRect(a, sy(-21), W - a, H);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    for (let x = Math.max(TOWN, Math.floor(camX / 120) * 120); x < camX + viewW() + 120; x += 120) ctx.fillRect(sx(x), sy(-70), 60 * S, 5 * S);
+  }
+}
+
+/** night: the sky darkens, stars come out */
+function nightFall(n, t) {
+  if (n <= 0) return;
+  ctx.fillStyle = `rgba(14,16,52,${n * 0.5})`;
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#ffffff';
+  for (let i = 0; i < 70; i++) {
+    const x = ((i * 137.5) % W), y = ((i * 61.3) % (baseY() * 0.45));
+    ctx.globalAlpha = n * (0.4 + 0.6 * Math.sin(t * 1.3 + i) ** 2);
+    ctx.fillRect(x, y, 2, 2);
+  }
+  ctx.globalAlpha = 1;
 }
 
 /* ------------------------------------------------------- draw: characters */
@@ -916,7 +1073,7 @@ function toast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
 }
 function updateHud() {
-  $('quest').textContent = `Day ${state.day + 1} · ${DAYS[state.day]} · ${SLOTS[state.slot]}`;
+  $('quest').textContent = `Day ${state.day + 1} · ${DAYS[state.day]} · ${clockText(state.clock)}`;
   $('zone').textContent = zoneAt(state.x);
   const ul = $('hearts');
   ul.innerHTML = '';
@@ -937,14 +1094,11 @@ async function talk(n) {
   state.busy = true;
   state.moving = false;
   state.face = n.x > state.x ? 1 : -1;
-  let usedTime = false;
   stage.right = n.who.name;
   if (n.kind === 'friend') await talkFriend(n.who);
-  else usedTime = await talkCrush(n.who);
+  else await talkCrush(n.who);
   closeDialog();
   updateHud();
-  if (state.ended) return;
-  if (usedTime) await nextSlot();
   if (!state.ended) state.busy = false;
 }
 
@@ -955,7 +1109,7 @@ async function talkFriend(f) {
   const me = state.me.name;
   if (isFinal()) {
     const top = topCrush();
-    await say(f.name, top ? `Why are you talking to me?! ${top.name} is waiting by the cherry tree. GO!` : 'Bro… you didn’t talk to anyone. I can already taste the bakso.');
+    await say(f.name, top ? `Why are you talking to me?! ${top.name} is waiting on the hotel balcony. GO!` : 'Bro… you didn’t talk to anyone. I can already taste the bakso.');
     return;
   }
   if (!state.talkedFriend.has(f.name)) {
@@ -967,8 +1121,8 @@ async function talkFriend(f) {
     return;
   }
   state.visits[f.name] = (state.visits[f.name] || 0) + 1;
-  const r = seeded(state.day * 13 + state.slot * 5 + f.name.length)();
-  const left = 5 - state.day;
+  const r = seeded(state.day * 13 + Math.floor(state.clock) * 5 + f.name.length)();
+  const left = DAYS.length - state.day;
   const lines = [
     `How’s the pact going, ${me}? Don’t make me eat bakso alone… actually, do.`,
     `${left} day${left === 1 ? '' : 's'} left. No pressure. Okay, a little pressure.`,
@@ -981,19 +1135,28 @@ async function talkFriend(f) {
   if (!state.met.has(cid)) await say(me, `${CRUSHES[cid].name}… the ${CRUSHES[cid].role}? Hmm.`);
 }
 
-/** returns true when the talk used up the time slot */
+/** small talk for when there's no new scene today */
+const CHAT = {
+  hana: [['The clouds here are fluffier than in Japan. Is that weird to notice?', 'normal'], ['This café’s iced coffee is dangerous. That’s my third.', 'happy']],
+  putri: [['Run lines with me later? I need a scene partner. Any scene partner.', 'smug'], ['The ballroom stage is HUGE. I’m going to be so good up there.', 'happy']],
+  alya: [['Did you finish the reading? …Of course you didn’t.', 'annoyed'], ['This bookstore has the best study corner in town. Don’t tell anyone.', 'smug']],
+  rania: [['Cheese bakso sold out again. Popular, huh?', 'happy'], ['Welcome to Kopi Senja! …Oh, it’s you. The usual?', 'happy']],
+  kirana: [['Ten more laps, then I’m all yours. …For a chat! A chat.', 'blush'], ['The river path at sunset is the best run in town.', 'happy']],
+  nayla: [['Too bright to see stars. Come back when it’s dark.', 'annoyed'], ['See that bright one? Jupiter. Say hi.', 'happy']],
+  sekar: [['…Hi. I’m drawing the window light.', 'blush'], ['Hold still. You’re in my picture now.', 'smug']],
+};
+
 async function talkCrush(c) {
   if (isFinal()) {
     if (c.id === topCrush()?.id) { await confession(c); return false; }
     await say(c.name, '…Shouldn’t you be somewhere right now?');
     return false;
   }
-  if (state.scene[c.id] >= 3) {
-    await say(c.name, ['See you at graduation.', 'Hi again. …Stop smiling like that.', 'Back already?'][state.day % 3]);
-    return false;
-  }
-  if (state.seenDay[c.id] === state.day) {
-    await say(c.name, `See you tomorrow, ${state.me.name}.`);
+  if (state.scene[c.id] >= 3 || state.seenDay[c.id] === state.day) {
+    // you can always talk; a new scene waits for tomorrow
+    const [line, ex] = CHAT[c.id][afterSchool() ? 1 : 0];
+    await say(c.name, line, ex);
+    if (state.scene[c.id] < 3) await say(c.name, `Come find me tomorrow, ${state.me.name}. I’ll have something to tell you.`, 'smug');
     return false;
   }
   if (!state.met.has(c.id)) await introCard(c);
@@ -1159,7 +1322,7 @@ const SCENES = {
   nayla: [
     async (c) => {
       await say('', 'Nayla from the astronomy club is fiddling with a telescope pointed at an empty sky.');
-      await say(c.name, 'Shh. I’m calibrating. There’s a meteor shower on Friday night.', 'annoyed');
+      await say(c.name, 'Shh. I’m calibrating. There’s a meteor shower on the last night.', 'annoyed');
       const i = await choose(['Can I watch it with you?', 'What’s a meteor shower?', 'Stars are just old light. Kind of sad.']);
       if (i === 0) { await say(c.name, '…You’d stay up that late? For space rocks? …Okay. Bring snacks.', 'blush', 'sparkle'); return 2; }
       if (i === 1) { await say(c.name, 'Tiny bits of a comet burning up in the sky. Hundreds of wishes, all at once.', 'happy'); return 1; }
@@ -1216,7 +1379,7 @@ const SCENES = {
 };
 
 /* ------------------------------------------------- cinematic moments */
-const EPISODES = ['The Pact', 'Hearts on the Line', 'Halfway There', 'Almost Brave', 'Under the Cherry Tree'];
+const EPISODES = ['The Pact', 'Hearts on the Line', 'After School', 'Halfway There', 'The Weekend', 'Almost Brave', 'Prom Night'];
 
 /** the freeze-frame card anime uses to introduce a character */
 async function introCard(who, label) {
@@ -1258,7 +1421,7 @@ async function opening() {
   const onSkip = () => { skip = true; };
   op.addEventListener('click', onSkip);
   window.addEventListener('keydown', onSkip, { once: true });
-  const beats = ['Five days before graduation.', 'Eleven friends.', 'One pact.'];
+  const beats = ['Seven days before college.', 'Eleven friends.', 'One pact.'];
   for (const b of beats) {
     if (skip) break;
     lineEl.textContent = b;
@@ -1305,7 +1468,7 @@ async function eyecatch() {
   const ec = $('eyecatch');
   ec.querySelector('.ec-day').textContent = `EPISODE ${state.day + 1} · ${DAYS[state.day]}`;
   ec.querySelector('.ec-name').textContent = EPISODES[state.day];
-  ec.querySelector('.ec-slot').textContent = isFinal() ? 'The last afternoon' : SLOTS[state.slot];
+  ec.querySelector('.ec-slot').textContent = state.day === LAST_DAY ? 'Prom night is tonight' : `${DAYS.length - state.day} days until college`;
   ec.hidden = false;
   await wait(30);
   ec.classList.add('show');
@@ -1315,41 +1478,78 @@ async function eyecatch() {
   await wait(500);
   ec.hidden = true;
 }
-async function nextSlot() {
+async function nextDay() {
+  state.busy = true;
   fade.classList.add('on');
   await wait(900);
-  if (state.slot === 0) state.slot = 1;
-  else { state.slot = 0; state.day++; }
-  state.x = state.slot === 0 ? 400 : 1000;
+  state.day++;
+  state.clock = DAY_START;
+  state.x = 400;
+  state.face = 1;
   camX = clamp(state.x - viewW() * 0.42, 0, WORLD - viewW());
   placeFriends();
   updateHud();
   fade.classList.remove('on');
   await eyecatch();
-  if (isFinal()) await finalAfternoon();
+  state.busy = false;
 }
+
+/** called every frame: moves the clock and handles what happens at certain hours */
+let lastHour = DAY_START;
+async function tickClock(dt) {
+  if (!state.started || state.ended || state.busy || !state.me) return;
+  const before = state.clock;
+  state.clock += dt / SECONDS_PER_HOUR;
+  if (before < SCHOOL_OUT && state.clock >= SCHOOL_OUT) {
+    placeFriends();
+    toast('🔔 School’s out! Everyone heads into town.');
+    song.chime();
+  }
+  if (state.day === LAST_DAY && before < PROM && state.clock >= PROM) {
+    state.busy = true;
+    await finalAfternoon();
+    if (!state.ended) state.busy = false;
+    return;
+  }
+  if (state.clock >= DAY_END) {
+    state.clock = DAY_END;
+    if (state.day === LAST_DAY) { await baksoEnd(topCrush()); return; }
+    state.busy = true;
+    await say('', `It’s getting late. ${state.me.name} heads home.`);
+    closeDialog();
+    await nextDay();
+  }
+  if (Math.floor(state.clock) !== lastHour) { lastHour = Math.floor(state.clock); updateHud(); }
+}
+/** skip ahead an hour */
+$('skip').addEventListener('click', () => {
+  if (!state.started || state.ended || state.busy) return;
+  state.clock = Math.min(DAY_END, state.clock + 1);
+  tickClock(0);
+  updateHud();
+});
 
 async function finalAfternoon() {
   const top = topCrush();
   const me = state.me.name;
   if (!top) {
-    await say(other('Ghanim', 'Lindan'), `${me}. It’s the last afternoon. You didn’t talk to a single one of them?`);
+    await say(other('Ghanim', 'Lindan'), `${me}. It’s prom night. You didn’t talk to a single one of them?`);
     await say(other('Hamzah', 'Aboi'), 'BAKSO! BAKSO! BAKSO!');
     closeDialog();
     await baksoEnd(null);
     return;
   }
-  await say(other('Ghanim', 'Lindan'), `This is it, ${me}. Graduation is tomorrow.`);
-  await say(other('Ghiffy', 'Arkan'), `${top.name} is waiting by the cherry tree in the courtyard. I may have… told her you wanted to talk.`);
+  await say(other('Ghanim', 'Lindan'), `This is it, ${me}. Prom night. College starts tomorrow.`);
+  await say(other('Ghiffy', 'Arkan'), `${top.name} is on the hotel balcony. I may have… told her you wanted to talk.`, 'smug');
   await say(me, 'You WHAT?', 'surprised', 'shock');
-  await say(other('Lindan', 'Nizam'), 'Go. Be honest. We’ll be hiding in the bushes. Supportively.');
+  await say(other('Lindan', 'Nizam'), 'Go. Be honest. We’ll be hiding behind the curtains. Supportively.');
   closeDialog();
 }
 
 /* ------------------------------------------------------------- endings */
 async function confession(c) {
   const me = state.me.name;
-  await say('', `Petals drift down from the cherry tree. ${c.name} turns around.`);
+  await say('', `Music drifts out from the ballroom. On the balcony, under the fairy lights, ${c.name} turns around.`);
   await say(c.name, `${me}. Your friends said you wanted to tell me something. …Then they ran away.`, 'blush', 'sweat');
   const mine = state.me.end;
   const i = await choose([mine.option, 'I like you. I have for a while.', '(Say nothing. Just hold out your hand.)']);
@@ -1391,6 +1591,7 @@ async function baksoEnd(c) {
   fade.classList.add('on');
   await wait(1200);
   $('hud').hidden = true;
+  $('skip').hidden = true;
   $('pad').hidden = true;
   document.body.classList.remove('talking');
   $('res-kana').textContent = 'バクソ・エンド';
@@ -1411,6 +1612,7 @@ function happyEnd(c) {
   fade.classList.add('on');
   setTimeout(() => {
     $('hud').hidden = true;
+    $('skip').hidden = true;
     $('pad').hidden = true;
     stopLoop = true;
     document.body.classList.remove('talking');
@@ -1444,7 +1646,7 @@ const keys = new Set();
 window.addEventListener('keydown', (e) => {
   if (!state.started || state.ended) return;
   const k = e.key.toLowerCase();
-  if (['arrowleft', 'arrowright', 'a', 'd'].includes(k)) { keys.add(k); e.preventDefault(); }
+  if (['arrowleft', 'arrowright', 'a', 'd', 'shift'].includes(k)) { keys.add(k); e.preventDefault(); }
   if (k === 'e' || k === ' ' || k === 'enter') {
     if (e.target.tagName === 'BUTTON' && dlgChoices.contains(e.target)) return;
     e.preventDefault();
@@ -1456,7 +1658,7 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
 window.addEventListener('blur', () => keys.clear());
 
-const hold = { left: false, right: false };
+const hold = { left: false, right: false, run: false };
 for (const [id, dir] of [['btn-left', 'left'], ['btn-right', 'right']]) {
   const b = $(id);
   const on = (e) => { e.preventDefault(); hold[dir] = true; b.classList.add('held'); };
@@ -1466,6 +1668,11 @@ for (const [id, dir] of [['btn-left', 'left'], ['btn-right', 'right']]) {
   b.addEventListener('pointerleave', off);
   b.addEventListener('pointercancel', off);
   b.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+{
+  const b = $('btn-run');
+  const on = (e) => { e.preventDefault(); hold.run = !hold.run; b.classList.toggle('held', hold.run); };
+  b.addEventListener('pointerdown', on);
 }
 const talkBtn = $('btn-talk');
 talkBtn.addEventListener('click', () => {
@@ -1495,7 +1702,8 @@ function frame(now) {
   state.moving = dir !== 0;
   if (dir) {
     state.face = dir;
-    state.x = clamp(state.x + dir * 190 * dt, 60, WORLD - 60);
+    const run = keys.has('shift') || hold.run ? 1.9 : 1;
+    state.x = clamp(state.x + dir * 190 * run * dt, 60, WORLD - 60);
     state.phase += dt * 11;
   }
   const vw = viewW();
@@ -1508,11 +1716,16 @@ function frame(now) {
   if (z !== lastZone && state.started) { lastZone = z; $('zone').textContent = z; }
 
   if (showcase) camX = clamp(showcase.x - viewW() / 2, 0, WORLD - viewW());
+  tickClock(dt);
   const q = showcase ? showcase.q : lateness();
+  const n = showcase ? 0 : nightness();
+  if (Math.floor(t) !== Math.floor(t - dt)) $('quest').textContent = state.me ? `Day ${state.day + 1} · ${DAYS[state.day]} · ${clockText(state.clock)}` : '';
   ctx.clearRect(0, 0, W, H);
   drawOutside(q, t);
   drawInterior(q);
   drawCourtyardAndRoof(q, t);
+  drawTown(q, n, t);
+  nightFall(n, t);
 
   for (const p of friendsHere) {
     const face = Math.abs(state.x - p.x) < 200 ? (state.x < p.x ? -1 : 1) : p.face;
@@ -1555,7 +1768,10 @@ function frame(now) {
 /** cherry petals drifting whenever the camera sees outdoors */
 const petals = [];
 function petalsOutside(dt, t) {
-  const outdoors = clamp(((camX + viewW()) - 2700) / 400);
+  // petals only where the cherry trees are: the school courtyard and the riverside park
+  const mid = camX + viewW() / 2;
+  const near = (a, b) => clamp(1 - Math.max(a - mid, mid - b, 0) / 500);
+  const outdoors = Math.max(near(2700, 3400), near(5760, 6760));
   const want = Math.round((reduced ? 14 : 55) * outdoors);
   while (petals.length < want) petals.push({ x: Math.random() * W, y: -20 - Math.random() * H * 0.6, vx: 25 + Math.random() * 35, vy: 25 + Math.random() * 30, r: (3 + Math.random() * 3) * S, rot: Math.random() * 6, spin: Math.random() * 4 - 2, flip: Math.random() * 6 });
   ctx.fillStyle = 'rgba(255,196,216,0.92)';
@@ -1606,6 +1822,7 @@ async function pick(f) {
   state.me = f;
   $('select').hidden = true;
   $('hud').hidden = false;
+  $('skip').hidden = false;
   if (touch) $('pad').hidden = false;
   state.started = true;
   state.x = 400;
@@ -1615,14 +1832,14 @@ async function pick(f) {
   await introCard(f, `${f.role} · our protagonist`);
   await eyecatch();
   const me = f.name;
-  await say('', 'Five days before graduation. Class 12-A, lunch break.');
+  await say('', 'Seven days before college. Class 12-A, Monday morning.');
   await say(other('Ghanim', 'Lindan'), 'Alright, everyone. The pact. Say it with me.');
   await say(other('Ghiffy', 'Arkan'), 'EVERYONE GETS A CRUSH BEFORE COLLEGE!', 'happy', 'shock');
   await say(other('Aboi', 'Zubair'), 'And whoever doesn’t…');
   await say(other('Hamzah', 'Qai'), '…treats the whole squad to bakso. Extra meatballs.', 'smug');
   await say(other('Lindan', 'Nizam'), `${me}, you go first. Don’t make us eat for free. …Actually, do.`);
   await say(me, '…Why does this feel like a trap?', 'annoyed', 'sweat');
-  await say('', 'Friends give advice for free. Each talk with a crush (♥) takes your whole lunch break or afternoon. On Friday afternoon, you confess.');
+  await say('', 'Each day lasts nine minutes, from 07:00 to 21:00. Talk to anyone, anytime: a ♥ means a girl has a new moment for you today. After 15:00 everyone heads into town. Sunday night is prom — that’s when you confess.');
   closeDialog();
   placeFriends();
   state.busy = false;

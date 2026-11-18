@@ -192,7 +192,8 @@ function body(c, L) {
 function face(c, L, expr, talking, t, seed) {
   const girl = !!L.girl;
   const blink = Math.sin(t * 1.3 + seed * 1.7) > 0.982;
-  const ew = girl ? 54 : 46, eh = girl ? 62 : 50;
+  // a younger, softer face gets bigger eyes
+  const ew = girl ? 54 : L.young ? 52 : 46, eh = girl ? 62 : L.young ? 58 : 50;
   const ey = 246;
   const look = expr === 'blush' ? 7 : 0;
   for (const s of [-1, 1]) {
