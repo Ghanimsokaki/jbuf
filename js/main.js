@@ -13,7 +13,16 @@
 import { LoveSong } from './audio.js';
 import { HeartFx } from './fx.js';
 import { startEnding } from './ending.js';
-import { drawPortrait } from './portrait.js';
+import { drawPortrait, drawCharacter } from './portrait.js';
+
+/* real illustrated art: art/<name>.webp, a cut-out bust for every character */
+const ART = {};
+function artFor(name) {
+  if (!name) return null;
+  const key = name.toLowerCase();
+  if (!(key in ART)) { const im = new Image(); im.src = `./art/${key}.webp`; ART[key] = im; }
+  return ART[key];
+}
 
 const MUSIC_URL = './prettyjohn1-calm-537656.mp3';
 
@@ -969,7 +978,7 @@ function paintPortrait(cv, name, t) {
   c.clearRect(0, 0, w, h);
   if (!L) return;
   const talkingNow = speaking === name;
-  drawPortrait(c, w, h, L, { expr: stage.ex[name], talking: talkingNow, t, seed: name.length * 3, fx: stage.speaker === name ? stage.fx : null });
+  drawCharacter(c, w, h, L, artFor(name), { expr: stage.ex[name], talking: talkingNow, t, seed: name.length * 3, fx: stage.speaker === name ? stage.fx : null });
 }
 function drawStage(t) {
   if (stageEl.hidden) return;
@@ -1398,7 +1407,7 @@ async function introCard(who, label) {
     const c = cv.getContext('2d');
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, w, h);
-    drawPortrait(c, w, h, who.look, { expr: who.look.girl ? 'happy' : 'smug', t: (performance.now() - t0) / 1000, seed: 2, fx: 'sparkle' });
+    drawCharacter(c, w, h, who.look, artFor(who.name), { expr: who.look.girl ? 'happy' : 'smug', t: (performance.now() - t0) / 1000, seed: 2, fx: 'sparkle' });
     requestAnimationFrame(draw);
   };
   requestAnimationFrame(draw);
@@ -1807,7 +1816,9 @@ function buildRoster() {
     b.type = 'button';
     const cv = document.createElement('canvas');
     cv.width = cv.height = px;
-    drawPortrait(cv.getContext('2d'), px, px, f.look, { expr: 'normal', t: 1, seed: 1 });
+    const paint = () => { const c2 = cv.getContext('2d'); c2.clearRect(0, 0, px, px); drawCharacter(c2, px, px, f.look, artFor(f.name), { expr: 'normal', t: 1, seed: 1, fill: 1.05 }); };
+    paint();
+    artFor(f.name).addEventListener('load', paint);
     const name = document.createElement('b');
     name.textContent = f.name;
     const role = document.createElement('small');
@@ -1872,5 +1883,6 @@ $('again').addEventListener('click', () => location.reload());
 
 window.addEventListener('resize', resize);
 resize();
+for (const n of [...FRIENDS.map((f) => f.name), ...Object.values(CRUSHES).map((c) => c.name)]) artFor(n);
 buildRoster();
 requestAnimationFrame(frame);

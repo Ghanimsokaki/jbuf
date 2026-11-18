@@ -605,3 +605,39 @@ function anger(c) {
     c.beginPath(); c.moveTo(x + a[0], y + a[1]); c.quadraticCurveTo(x, y + (a[1] < 0 ? -12 : 14), x + b[0], y + b[1]); c.stroke();
   }
 }
+
+/**
+ * Draws a character using real illustrated art when it has loaded, falling
+ * back to the drawn-in-code portrait otherwise. The art is a cut-out bust; it
+ * breathes gently, bobs while talking, and gets the same sparkle, sweat and
+ * anger effects as the code-drawn faces.
+ */
+export function drawCharacter(c, w, h, L, art, o = {}) {
+  if (!art || !art.complete || !art.naturalWidth) return drawPortrait(c, w, h, L, o);
+  const t = o.t || 0;
+  const breathe = 1 + Math.sin(t * 1.6 + (o.seed || 0)) * 0.006;
+  const bob = o.talking ? Math.abs(Math.sin(t * 9)) * 3 : 0;
+  const k = Math.min((h * (o.fill || 0.98)) / art.naturalHeight, w / art.naturalWidth);
+  const dw = art.naturalWidth * k * breathe, dh = art.naturalHeight * k * breathe;
+  c.save();
+  c.translate(w / 2, h);
+  if (o.flip) c.scale(-1, 1);
+  c.drawImage(art, -dw / 2, -dh - bob, dw, dh);
+  c.restore();
+  if (o.expr === 'blush') {
+    c.save();
+    c.fillStyle = 'rgba(255,90,130,0.16)';
+    c.beginPath(); c.ellipse(w / 2, h - dh * 0.66, dw * 0.22, dh * 0.05, 0, 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+  if (o.fx) {
+    c.save();
+    const g = Math.min(w / GW, h / GH);
+    c.translate((w - GW * g) / 2, h - GH * g);
+    c.scale(g, g);
+    if (o.fx === 'sparkle' || o.fx === 'heart') sparkles(c, t, o.fx === 'heart');
+    if (o.fx === 'sweat') sweat(c, t);
+    if (o.fx === 'anger') anger(c);
+    c.restore();
+  }
+}
