@@ -194,11 +194,33 @@ const FRIENDS = [
       epilogue: 'Nizam’s graduation song topped the class charts. Everyone knows who it’s about.',
       bakso: 'Nizam’s song needs one more verse. He’s writing it at the bakso stall. His treat.',
     } },
+  { name: 'Haidar', fates: ['asked someone to prom with a single rose. Smooth ✓', 'got 14 love letters and answered none of them'], role: 'the class prince', look: look({ hair: '#2a1e1a', hairHi: '#5a4438', style: 'parted', top: '#ffffff', topSh: '#dfe3ee', tie: '#7a2a3a', skin: '#e8b896' }),
+    line: 'Relax. Confidence is 90% of romance. The other 10% is good hair.',
+    hint: ['renata', 'Renata surfs at the beach after school. Don’t try to impress her — she sees right through it.'],
+    end: {
+      option: 'Offer her a single red rose, and a bow.',
+      reply: '…Is this a romance drama? …Okay. I’ll play the heroine. Yes.',
+      b: 'Do you practise being this smooth?',
+      a: 'Only in the mirror. You’re the first live audience.',
+      epilogue: 'Haidar, the class prince, finally found his princess.',
+      bakso: 'Even the class prince pays for bakso sometimes. Tonight, it’s his turn.',
+    } },
+  { name: 'Athar', fates: ['gave someone a ride home on his bike. She held on tight ✓', 'is still polishing his motorbike instead of texting back'], role: 'the rider', look: look({ hair: '#141018', style: 'messy', top: '#3a3a44', topSh: '#26262e', skin: '#d9a07a' }),
+    line: 'Every road in this town, I’ve ridden it. Every girl in this town? Talked to none.',
+    hint: ['thisa', 'Thisa runs her family’s satay stall at the night market. Order the extra-spicy one. Trust me.'],
+    end: {
+      option: 'Hand her a spare helmet: “Want a ride home… every day?”',
+      reply: '…You bought a pink helmet? For me? …Okay. Yes. Drive slowly.',
+      b: 'You drove so slowly the bicycles passed us.',
+      a: 'Precious cargo. Safety first.',
+      epilogue: 'Athar found someone worth riding slowly for.',
+      bakso: 'Athar’s bike ran out of fuel on the way to confess. He walked to the bakso stall instead. His treat.',
+    } },
 ];
 
 /** the classmates who might become your crush */
 const CRUSHES = {
-  hana: { id: 'hana', name: 'Hana', kana: 'ハナ', role: 'transfer student from Japan', x: 600,
+  ana: { id: 'ana', name: 'Ana', kana: 'アナ', role: 'transfer student from Japan', x: 600,
     look: look({ girl: true, hair: '#16121e', hairHi: '#3a3050', style: 'long', iris: '#4a3a6a', clip: '#ffffff', tie: '#3a5aa8', bottom: SKIRT, skirt: true, skin: '#f8d8c4' }),
     end: { girlHair: '#16121e', girlHairHi: '#3a3050', cardigan: '#ffffff', cardiganSh: '#dfe3ee', hairLen: 60 } },
   putri: { id: 'putri', name: 'Putri', kana: 'プトリ', role: 'drama club star', x: 1160,
@@ -219,6 +241,18 @@ const CRUSHES = {
   sekar: { id: 'sekar', name: 'Sekar', kana: 'スカル', role: 'quiet artist', x: 3740,
     look: look({ girl: true, hair: '#5b3428', hairHi: '#8a5a44', style: 'braid', iris: '#3a7a5a', top: '#9fc4a0', topSh: '#7aa47c', collar: true, bottom: SKIRT, skirt: true, skin: '#f0c4a4' }),
     end: { girlHair: '#5b3428', girlHairHi: '#8a5a44', cardigan: '#9fc4a0', cardiganSh: '#7aa47c', hairLen: 58 } },
+  nadia: { id: 'nadia', name: 'Nadia', kana: 'ナディア', role: 'the singer', x: 1350,
+    look: look({ girl: true, hair: '#6a2a3a', hairHi: '#a85a6a', style: 'long', ribbon: '#ffffff', iris: '#c84a6a', tie: '#c84a6a', bottom: SKIRT, skirt: true, skin: '#f6cdb2' }),
+    end: { girlHair: '#6a2a3a', girlHairHi: '#a85a6a', cardigan: '#ffffff', cardiganSh: '#dfe3ee', hairLen: 56 } },
+  thisa: { id: 'thisa', name: 'Thisa', kana: 'ティサ', role: 'night-market satay queen', x: 2250,
+    look: look({ girl: true, hair: '#1e1612', hairHi: '#4a3a30', style: 'ponytail', ribbon: '#ffb000', iris: '#8a4a1a', top: '#f08a3a', topSh: '#c86a28', bottom: SKIRT, skirt: true, skin: '#d9a07a' }),
+    end: { girlHair: '#1e1612', girlHairHi: '#4a3a30', cardigan: '#f08a3a', cardiganSh: '#c86a28', hairLen: 40 } },
+  renata: { id: 'renata', name: 'Renata', kana: 'レナタ', role: 'the surfer', x: 3260,
+    look: look({ girl: true, hair: '#c8a060', hairHi: '#f0d090', style: 'bob', iris: '#2a8ab0', top: '#4ac0d8', topSh: '#2a98b0', bottom: '#2a2a38', skin: '#d9a07a' }),
+    end: { girlHair: '#c8a060', girlHairHi: '#f0d090', cardigan: '#4ac0d8', cardiganSh: '#2a98b0', hairLen: 16 } },
+  mira: { id: 'mira', name: 'Mira', kana: 'ミラ', role: 'new transfer student ♡', x: -9999, secret: true,
+    look: look({ girl: true, hair: '#b8a0e0', hairHi: '#e0d0ff', style: 'twintails', ribbon: '#ff3f7f', iris: '#e0306a', tie: '#ff3f7f', bottom: SKIRT, skirt: true, skin: '#f8dcc8' }),
+    end: { girlHair: '#b8a0e0', girlHairHi: '#e0d0ff', cardigan: '#ffffff', cardiganSh: '#dfe3ee', hairLen: 40 } },
 };
 const CRUSH_IDS = Object.keys(CRUSHES);
 const perCrush = (v) => Object.fromEntries(CRUSH_IDS.map((id) => [id, v]));
@@ -226,9 +260,11 @@ const perCrush = (v) => Object.fromEntries(CRUSH_IDS.map((id) => [id, v]));
 /** a little extra for each friend: their name in katakana, eye colour, and a second tip */
 const EXTRA = {
   Ghanim: ['ガニム', '#3a3050'], Ghiffy: ['ギフィ', '#7a4a2a'], Lindan: ['リンダン', '#3a6a7a', ['nayla', 'Nayla’s tracking a meteor shower on the last night. Clear skies, by my forecast.']],
-  Arkan: ['アルカン', '#3a2a20'], Dyas: ['ディアス', '#3a3a6a'], Zubair: ['ズバイル', '#5a3a6a', ['hana', 'Hana’s from Japan. Don’t be weird about anime with her. …I learned that the hard way.']],
+  Arkan: ['アルカン', '#3a2a20'], Dyas: ['ディアス', '#3a3a6a'], Zubair: ['ズバイル', '#5a3a6a', ['ana', 'Ana’s from Japan. Don’t be weird about anime with her. …I learned that the hard way.']],
   Ahza: ['アフザ', '#4a3020', ['putri', 'I photographed Putri’s rehearsal. She acts confident, but her hands were shaking.']],
   Aboi: ['アボイ', '#3a2a20'], Qai: ['カイ', '#5a4a7a'], Hamzah: ['ハムザ', '#3a4a2a'],
+  Haidar: ['ハイダル', '#5a3a2a', ['nadia', 'Nadia sings in the music room when she thinks nobody’s listening. Be the somebody.']],
+  Athar: ['アタル', '#2a2a3a'],
   Nizam: ['ニザム', '#3a3a4a', ['putri', 'Putri’s play opens on graduation eve. If she asks for help, help. I’m doing the music.']],
 };
 for (const f of FRIENDS) {
@@ -263,7 +299,7 @@ const isFinal = () => state.day === LAST_DAY && state.clock >= PROM;
 const afterSchool = () => state.clock >= SCHOOL_OUT;
 
 /* --------------------------------------------------------------- the school */
-const WORLD = 7700;
+const WORLD = 11000;
 const ZONES = [
   ['Classroom 12-A', 0, 800],
   ['Hallway', 800, 1500],
@@ -277,7 +313,11 @@ const ZONES = [
   ['Game Center', 4950, 5380],
   ['Bookstore', 5380, 5760],
   ['Riverside park', 5760, 6760],
-  ['Grand Bintang Hotel', 6760, WORLD + 100],
+  ['Grand Bintang Hotel', 6760, 7700],
+  ['Train station', 7700, 8400],
+  ['Night market', 8400, 9300],
+  ['Bintang Mall', 9300, 10000],
+  ['The beach', 10000, WORLD + 100],
 ];
 const zoneAt = (x) => ZONES.find(([, a, b]) => x >= a && x < b)?.[0] || 'Rooftop';
 const SAKURA_X = 3150;
@@ -309,16 +349,16 @@ let friendsHere = []; // { f, x, face } for this part of the day
 function placeFriends() {
   const r = seeded(state.day * 7 + (afterSchool() ? 3 : 0) + 1);
   const spots = afterSchool()
-    ? [3880, 4100, 4250, 4380, 4960, 5150, 5300, 5420, 5800, 6080, 6450, 6720, 6900, 7200]
+    ? [3880, 4100, 4250, 4380, 4960, 5150, 5300, 5420, 5800, 6080, 6450, 6720, 6900, 7200, 7900, 8250, 8600, 9100, 9500, 9850, 10250, 10700]
     : [180, 330, 560, 700, 950, 1120, 1330, 1600, 2000, 2200, 2620, 2800, 3300, 3480, 3850];
   const taken = Object.values(CRUSHES).map((c) => crushX(c));
   const free = spots.filter((s) => taken.every((b) => Math.abs(b - s) > 140));
   for (let i = free.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [free[i], free[j]] = [free[j], free[i]]; }
   friendsHere = FRIENDS.filter((f) => f !== state.me).map((f, i) => ({ f, x: free[i % free.length] + (i >= free.length ? 60 : 0), face: r() < 0.5 ? 1 : -1 }));
 }
-const TOWN_SPOT = { hana: 4640, rania: 4820, alya: 5560, kirana: 5960, sekar: 6290, nayla: 6560, putri: 7000 };
+const TOWN_SPOT = { ana: 4640, rania: 4820, alya: 5560, kirana: 5960, sekar: 6290, nayla: 6560, putri: 7000, thisa: 8460, nadia: 9700, renata: 10420 };
 const HOTEL_BALCONY = 7460;
-const crushX = (c) => (isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : afterSchool() ? TOWN_SPOT[c.id] : c.x);
+const crushX = (c) => (isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : c.id === 'mira' ? miraX : afterSchool() ? TOWN_SPOT[c.id] : c.x);
 function topCrush() {
   let best = null;
   for (const c of Object.values(CRUSHES)) {
@@ -694,6 +734,229 @@ function nightFall(n, t) {
   ctx.globalAlpha = 1;
 }
 
+/* ------------------------------------------- draw: further out in town */
+const STATION = 7700, MARKET = 8400, MALL = 9300, BEACH = 10000;
+function drawFarTown(q, n, t) {
+  if (camX + viewW() < STATION - 80) return;
+  // train station: platform roof, a train passing every so often
+  rect(STATION + 20, 0, 640, 300, mix('#dfe6ee', '#c8b8c8', q));
+  rect(STATION, 300, 680, 24, '#3a5aa8');
+  text('STASIUN BINTANG', STATION + 340, 312, 16, '#ffffff');
+  for (let i = 0; i < 5; i++) rect(STATION + 60 + i * 120, 0, 10, 300, '#7a8090');
+  rect(STATION + 40, 120, 600, 160, mix('#9fc8ee', '#ffc89a', q, 0.6));
+  const cycle = (t * 260) % 3400;
+  if (cycle < 1600) {
+    const tx = STATION - 900 + cycle;
+    rect(tx, 130, 860, 120, '#e8eef7');
+    rect(tx, 200, 860, 16, '#e8304f');
+    for (let k = 0; k < 9; k++) rect(tx + 30 + k * 92, 150, 60, 40, n > 0 ? 'rgba(255,220,150,0.9)' : '#7aa8d8');
+  }
+  rect(STATION + 40, 120, 600, 8, '#5a6070');
+  text('Platform 1 · to the city', STATION + 340, 96, 11, '#3a3050', 700);
+
+  // night market: stalls, string lights, steam
+  const stalls = [['SATE THISA', '#f08a3a'], ['Martabak', '#e8504f'], ['Es Doger', '#4ac0d8'], ['Jagung Bakar', '#ffcf3f'], ['Takoyaki', '#7a5bb5']];
+  stalls.forEach(([name, col], i) => {
+    const x = MARKET + 40 + i * 170;
+    rect(x, 0, 140, 80, '#8a5a3a');
+    rect(x - 6, 140, 152, 20, col);
+    rect(x, 80, 6, 60, '#5a3a2a'); rect(x + 134, 80, 6, 60, '#5a3a2a');
+    text(name, x + 70, 150, 11, '#ffffff', 800);
+    if (i === 0) for (let s2 = 0; s2 < 3; s2++) { // smoke from the satay grill
+      ctx.fillStyle = `rgba(255,255,255,${0.25 - s2 * 0.06})`;
+      ctx.beginPath(); ctx.arc(sx(x + 70 + Math.sin(t * 2 + s2) * 8), sy(100 + s2 * 26 + (t * 20) % 26), (10 + s2 * 6) * S, 0, Math.PI * 2); ctx.fill();
+    }
+  });
+  for (let i = 0; i < 26; i++) {
+    const x = MARKET + 20 + i * 34;
+    ctx.fillStyle = ['#ffd23f', '#ff7aa8', '#7fd8ff', '#9fe08a'][i % 4];
+    ctx.globalAlpha = 0.5 + 0.5 * n + 0.2 * Math.sin(t * 3 + i);
+    ctx.beginPath(); ctx.arc(sx(x), sy(190 + Math.sin(i * 0.7) * 10), 4 * S, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // mall
+  rect(MALL + 20, 0, 660, 420, mix('#e8e0f0', '#c8b0d0', q));
+  for (let fl = 0; fl < 3; fl++) rect(MALL + 40, 140 + fl * 90, 620, 60, n > 0 ? `rgba(255,214,160,${0.5 + n * 0.5})` : mix('#9fd0ff', '#ffc89a', q));
+  rect(MALL + 260, 0, 180, 120, '#2a2238');
+  rect(MALL + 270, 0, 160, 110, n > 0 ? 'rgba(255,230,180,0.9)' : '#bfe2ff');
+  rect(MALL + 160, 400, 380, 40, '#ff5f96');
+  text('BINTANG MALL', MALL + 350, 420, 20, '#ffffff');
+  rect(MALL + 520, 20, 120, 80, '#3a2050');
+  text('OPEN MIC', MALL + 580, 74, 12, '#ffd98a');
+  text('Sat · 7pm ♪', MALL + 580, 50, 10, '#ffffff', 700);
+
+  // beach: sand, sea and a lifeguard tower
+  const b0 = Math.max(0, sx(BEACH));
+  if (b0 < W) {
+    const g = ctx.createLinearGradient(0, sy(90), 0, sy(0));
+    g.addColorStop(0, mix('#4aa8d8', '#c870a0', q));
+    g.addColorStop(1, mix('#7fd0e8', '#e8a0a0', q));
+    ctx.fillStyle = g;
+    ctx.fillRect(b0, sy(90), W - b0, 90 * S);
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2 * S;
+    for (let k = 0; k < 4; k++) {
+      ctx.beginPath();
+      for (let x = b0; x < W; x += 10) ctx.lineTo(x, sy(20 + k * 18) + Math.sin(x * 0.03 + t * 2 + k) * 3 * S);
+      ctx.stroke();
+    }
+    rect(BEACH + 600, 0, 8, 150, '#c8a060'); rect(BEACH + 680, 0, 8, 150, '#c8a060');
+    rect(BEACH + 590, 150, 110, 50, '#e8304f');
+    text('LIFEGUARD', BEACH + 645, 175, 10, '#ffffff');
+    // palm tree
+    rect(BEACH + 250, 0, 12, 230, '#8a6a4a');
+    ctx.fillStyle = mix('#4f9a46', '#2f5a3a', q);
+    for (let k = 0; k < 6; k++) { ctx.save(); ctx.translate(sx(BEACH + 256), sy(230)); ctx.rotate(-Math.PI / 2 + (k - 2.5) * 0.55 + Math.sin(t + k) * 0.04); ctx.beginPath(); ctx.ellipse(55 * S, 0, 60 * S, 12 * S, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+    // a surfboard stuck in the sand
+    ctx.save(); ctx.translate(sx(BEACH + 470), sy(0)); ctx.rotate(-0.15); ctx.fillStyle = '#4ac0d8';
+    ctx.beginPath(); ctx.ellipse(0, -60 * S, 14 * S, 62 * S, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
+  for (const x of [8350, 9250, 9950]) streetLamp(x, n);
+}
+
+/* ------------------------------------------------- cars on the town road */
+const cars = [];
+let nextCar = 3;
+function drawCar(x, h, col, dir) {
+  ctx.save();
+  ctx.translate(sx(x), sy(h));
+  ctx.scale(S * dir, S);
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.roundRect(-90, -52, 180, 36, 10); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(-50, -82, 100, 34, 12); ctx.fill();
+  ctx.fillStyle = 'rgba(200,230,255,0.9)';
+  ctx.fillRect(-42, -76, 38, 24); ctx.fillRect(4, -76, 38, 24);
+  ctx.fillStyle = '#ffeaa0'; ctx.fillRect(84, -44, 8, 10);
+  ctx.fillStyle = '#2a2a38';
+  ctx.beginPath(); ctx.arc(-55, -14, 15, 0, Math.PI * 2); ctx.arc(55, -14, 15, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function updateCars(dt) {
+  if (!road && afterSchool()) {
+    nextCar -= dt;
+    if (nextCar <= 0) {
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      cars.push({ x: dir > 0 ? camX - 300 : camX + viewW() + 300, dir, speed: 300 + Math.random() * 200, col: ['#e8504f', '#3a5aa8', '#ffcf3f', '#e8eef7', '#4f8a46'][Math.floor(Math.random() * 5)] });
+      nextCar = 2 + Math.random() * 4;
+    }
+  }
+  for (let i = cars.length - 1; i >= 0; i--) {
+    const c = cars[i];
+    c.x += c.dir * c.speed * dt;
+    if (c.x < camX - 600 || c.x > camX + viewW() + 600) { cars.splice(i, 1); continue; }
+    if (c.x > TOWN) drawCar(c.x, c.dir > 0 ? -100 : -50, c.col, c.dir);
+  }
+}
+
+/* ------------------------------------------ event: a girl steps into the road */
+let road = null; // { c, x, carX, t, done }
+let roadDay = -1;
+function maybeStartRoadEvent(dt) {
+  if (road || roadDay === state.day || !afterSchool() || state.busy || state.ended || state.x < 4300 || state.x > BEACH) return;
+  // usually within ten seconds of reaching town, and for sure by 17:30
+  if (Math.random() > dt / 10 && state.clock < 17.5) return;
+  const pool = Object.values(CRUSHES).filter((c) => !c.secret && Math.abs(crushX(c) - state.x) > 300);
+  const c = pool[Math.floor(Math.random() * pool.length)];
+  roadDay = state.day;
+  road = { c, x: state.x + 240 * state.face, carX: state.x + 240 * state.face + 1100, t: 0, done: false };
+  state.busy = true;
+  stage.right = null;
+  $('save-btn').hidden = false;
+  $('save-btn').focus({ preventScroll: true });
+  song.chime();
+}
+function drawRoadEvent(dt, t) {
+  if (!road) return;
+  road.t += dt;
+  const slow = road.saved ? 0.2 : 1;
+  if (!road.done) road.carX -= 700 * dt * slow;
+  // the girl looking at her phone in the middle of the road
+  const gx = road.saved ? road.x - 20 : road.x;
+  walker(road.c.name, { x: sx(gx), y: sy(road.saved ? 0 : -50), k: S, face: 1, look: road.c.look, t, phase: 0, moving: false, seed: 9 });
+  drawCar(road.carX, -50, '#e8304f', -1);
+  if (!road.saved && !road.done) {
+    // warning marks and the prompt
+    text('!!', road.x, 150, 34, '#ff3f5f');
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 3 * S;
+    for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.moveTo(sx(road.carX + 100 + k * 30), sy(-70 - k * 8)); ctx.lineTo(sx(road.carX + 180 + k * 40), sy(-70 - k * 8)); ctx.stroke(); }
+  }
+  if (!road.done && road.carX - road.x < 130) finishRoad(false);
+}
+async function finishRoad(saved) {
+  if (!road || road.done) return;
+  road.done = true;
+  road.saved = saved;
+  $('save-btn').hidden = true;
+  const c = road.c;
+  const me = state.me.name;
+  if (saved) {
+    shock();
+    state.x = road.x - 60;
+    state.face = 1;
+    await wait(900);
+    if (!state.met.has(c.id)) await introCard(c);
+    state.met.add(c.id);
+    await say('', `${me} dives into the road and pulls ${c.name} back onto the pavement. The car roars past, inches away.`);
+    await say(c.name, `W-what… ${me}? You… you just saved my life?!`, 'surprised', 'shock');
+    await say(c.name, '…My heart is beating so fast. I don’t think it’s only because of the car.', 'blush', 'heart');
+    state.aff[c.id] += 3;
+    state.last = c.id;
+    toast(`HERO! ${c.name} ♥ +3`);
+    song.pickup();
+    fx.burst(sx(state.x), sy(110), reduced ? 8 : 20);
+  } else {
+    await say('', `SCREEEECH! The car brakes hard and stops just in front of ${c.name}. The driver honks. She jumps back to the pavement, shaking.`);
+    await say(c.name, '…That was way too close. I need to stop texting while walking.', 'sad', 'sweat');
+    toast('Too slow… she’s okay, but no hero points.');
+  }
+  closeDialog();
+  road = null;
+  state.busy = false;
+  updateHud();
+}
+$('save-btn').addEventListener('click', () => finishRoad(true));
+window.addEventListener('keydown', (e) => { if (road && !road.done && e.key.toLowerCase() === 'f') { e.preventDefault(); finishRoad(true); } });
+
+/* ------------------------------------------------------ the crazy crush */
+let miraX = -9999;
+function updateMira(dt) {
+  if (state.day < 2 || !state.me) { miraX = -9999; return; }
+  // she is always just a little behind you. always.
+  const target = state.x - 170 * state.face;
+  if (miraX < -1000) miraX = target - 400 * state.face;
+  miraX += (target - miraX) * Math.min(1, dt * 0.9);
+}
+
+async function crazyEnd(c) {
+  const me = state.me.name;
+  await say('', 'The lights on the balcony flicker. When they come back on, Mira is standing right in front of you.');
+  await say(c.name, `I knew you’d choose me, ${me}. I’ve known since… well, since I chose you. ♡`, 'happy', 'heart');
+  await say(c.name, 'Look! My phone wallpaper is you. And my lock screen. And my notebook. And my pillowcase.', 'happy', 'sparkle');
+  await say(c.name, 'I already enrolled in your college. Same major. Same dorm floor. I bought us matching bags! ♡', 'smug', 'heart');
+  await choose(['…Run.', 'Mira, this is a lot.', '(Smile nervously.)']);
+  await say(c.name, 'Hehe, you’re so funny! Let’s run together! Forever and ever and ever. ♡', 'happy', 'shock');
+  closeDialog();
+  state.ended = true;
+  state.busy = true;
+  fade.classList.add('on');
+  await wait(1400);
+  ['hud', 'skip', 'pad', 'save-btn'].forEach((id) => { $(id).hidden = true; });
+  document.body.classList.remove('talking');
+  $('res-kana').textContent = 'ヤンデレ・エンド';
+  $('res-title').innerHTML = `${me} <span class="heart">♥</span> Mira…?`;
+  $('res-sub').textContent = `${me} got a crush before college. Technically, the crush got ${me}. She’ll be there on the first day of college. And the second. And every day after that. ♡`;
+  results(c);
+  $('res-list').firstChild.innerHTML = `<b>${me} (you)</b> — Mira said yes before you asked`;
+  const cg = document.createElement('img');
+  cg.src = './art/ending/mira.webp';
+  cg.className = 'crazy-cg';
+  cg.alt = '';
+  $('results').prepend(cg);
+  document.body.classList.add('show-results', 'crazy');
+  $('results').hidden = false;
+  fade.classList.remove('on');
+}
+
 /* ------------------------------------------------------- draw: characters */
 /**
  * A chibi character seen from the side, facing right (mirrored for left).
@@ -911,8 +1174,21 @@ function spriteFor(name) {
   if (!(key in SPRITE)) { const im = new Image(); im.src = `./art/sprite/${key}.webp`; SPRITE[key] = im; }
   return SPRITE[key];
 }
+function frameFor(name, kind) {
+  const key = `${name.toLowerCase()}-${kind}`;
+  if (!(key in SPRITE)) { const im = new Image(); im.src = `./art/sprite/${key}.webp`; SPRITE[key] = im; }
+  const im = SPRITE[key];
+  return im.complete && im.naturalWidth ? im : null;
+}
 function walker(name, o) {
-  const im = spriteFor(name);
+  let im = spriteFor(name);
+  if (o.moving) {
+    // a two-frame cycle: stride and stand for walking, run and stride for running
+    const step = Math.floor(o.phase / Math.PI) % 2;
+    const walk = frameFor(name, 'walk'), run = frameFor(name, 'run');
+    if (o.running && run) im = step ? run : (walk || im);
+    else if (walk) im = step ? walk : im;
+  }
   if (!im.complete || !im.naturalWidth) return chibi(ctx, o);
   const h = 128 * o.k, w = (im.naturalWidth * h) / im.naturalHeight;
   const bob = o.moving ? Math.abs(Math.sin(o.phase)) * 5 * o.k : Math.sin(o.t * 2 + o.seed) * 1.2 * o.k;
@@ -931,7 +1207,7 @@ function walker(name, o) {
 let near = null;
 function interactables() {
   const list = friendsHere.map((p) => ({ kind: 'friend', id: p.f.name, x: p.x, who: p.f }));
-  for (const c of Object.values(CRUSHES)) list.push({ kind: 'crush', id: c.id, x: crushX(c), who: c });
+  for (const c of Object.values(CRUSHES)) { const x = crushX(c); if (x > -1000) list.push({ kind: 'crush', id: c.id, x, who: c }); }
   return list;
 }
 function findNear() {
@@ -1169,7 +1445,11 @@ async function talkFriend(f) {
 
 /** small talk for when there's no new scene today */
 const CHAT = {
-  hana: [['The clouds here are fluffier than in Japan. Is that weird to notice?', 'normal'], ['This café’s iced coffee is dangerous. That’s my third.', 'happy']],
+  nadia: [['La la la— oh! You heard that, didn’t you.', 'blush'], ['The mall food court has the best acoustics. Don’t laugh.', 'smug']],
+  thisa: [['Hungry? You look hungry. Come to the night market later.', 'happy'], ['Ten skewers, extra spicy, coming up!', 'happy']],
+  renata: [['The surf report says big waves after school. Don’t miss it.', 'smug'], ['Sit on the sand with me. Watch the waves for a bit.', 'normal']],
+  mira: [['Oh, what a coincidence! ♡ Hehe.', 'happy'], ['I’m not following you! I just walk the same way. Every day. ♡', 'smug']],
+  ana: [['The clouds here are fluffier than in Japan. Is that weird to notice?', 'normal'], ['This café’s iced coffee is dangerous. That’s my third.', 'happy']],
   putri: [['Run lines with me later? I need a scene partner. Any scene partner.', 'smug'], ['The ballroom stage is HUGE. I’m going to be so good up there.', 'happy']],
   alya: [['Did you finish the reading? …Of course you didn’t.', 'annoyed'], ['This bookstore has the best study corner in town. Don’t tell anyone.', 'smug']],
   rania: [['Cheese bakso sold out again. Popular, huh?', 'happy'], ['Welcome to Kopi Senja! …Oh, it’s you. The usual?', 'happy']],
@@ -1211,9 +1491,115 @@ async function talkCrush(c) {
  * affection. say(who, line, expression, effect)
  */
 const SCENES = {
-  hana: [
+  nadia: [
     async (c, me) => {
-      await say('', 'By the classroom window sits Hana, the transfer student from Japan, watching the clouds.');
+      await say('', 'Someone is singing in the empty music room. The voice stops the second you open the door.');
+      await say(c.name, `${me}?! How long were you standing there?`, 'surprised', 'shock');
+      const i = await choose(['Long enough. Please keep singing.', 'I didn’t hear anything!', 'Was that the radio?']);
+      if (i === 0) { await say(c.name, '…Okay. But don’t look at me. Look at the window.', 'blush', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'You’re a terrible liar. …Thanks for trying, though.', 'smug'); return 1; }
+      await say(c.name, 'The RADIO?!', 'annoyed', 'anger');
+      return 0;
+    },
+    async (c) => {
+      await say(c.name, 'There’s an open-mic night at the mall on Saturday. I signed up. I might throw up.', 'sad', 'sweat');
+      const i = await choose(['I’ll be in the front row with a glowstick.', 'You’ll be great.', 'Maybe just don’t go?']);
+      if (i === 0) { await say(c.name, 'A glowstick?! …Bring two. One for each hand.', 'happy', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'You have to say that. …But I’ll take it.', 'blush'); return 1; }
+      await say(c.name, '…Wow. Thanks for the support.', 'annoyed');
+      return 0;
+    },
+    async (c, me) => {
+      await say(c.name, 'I wrote a new song. It’s about someone who listens to me sing when no one else does.', 'blush');
+      await say(c.name, `…Do you want to know who it’s about, ${me}?`, 'blush', 'sparkle');
+      const i = await choose(['…I think I already know.', 'Is it about me?', 'Is it about your cat?']);
+      if (i === 0) { await say(c.name, '…Then I don’t have to sing the last verse. You already know how it ends.', 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'You’ll have to come to the show to find out.', 'smug'); return 1; }
+      await say(c.name, 'I don’t HAVE a cat!', 'annoyed', 'anger');
+      return 0;
+    },
+  ],
+  thisa: [
+    async (c, me) => {
+      await say(c.name, `Satay, ten skewers, extra peanut sauce. That’s your order, right ${me}? I never forget a face. Or an order.`, 'smug');
+      const i = await choose(['Make it extra spicy.', 'Whatever you recommend.', 'Do you have salad?']);
+      if (i === 0) { await say(c.name, 'Ooh, a brave one! The last guy who ordered that cried. I liked him less than you.', 'happy', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'Chef’s choice. You’ve got good instincts.', 'happy'); return 1; }
+      await say(c.name, '…This is a SATAY stall.', 'annoyed', 'anger');
+      return 0;
+    },
+    async (c) => {
+      await say('', 'It starts to rain. Thisa is struggling to cover the grill on her own.');
+      const i = await choose(['Grab the other side of the tarp.', 'Hold your umbrella over her.', 'Run for cover.']);
+      if (i === 0) { await say(c.name, '…We’re both soaked now. Ha! But the satay survived. My hero.', 'happy', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'Now YOU’RE getting wet, silly.', 'blush'); return 1; }
+      await say(c.name, '…Thanks for nothing!', 'annoyed', 'anger');
+      return 0;
+    },
+    async (c, me) => {
+      await say(c.name, 'Mom says I can run the stall alone after graduation. But… sometimes I want to go to college too.', 'sad');
+      const i = await choose(['Why not both? I’ll help on weekends.', 'You can do anything you want.', 'Satay is your destiny.']);
+      if (i === 0) { await say(c.name, `…You’d flip satay with me every weekend, ${me}? …That sounds kind of perfect.`, 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'You really think so? …Thanks.', 'blush'); return 1; }
+      await say(c.name, 'Wow. Inspiring.', 'annoyed');
+      return 0;
+    },
+  ],
+  renata: [
+    async (c, me) => {
+      await say('', 'Renata walks out of the waves with her surfboard, totally unbothered.');
+      await say(c.name, `${me}. You can’t surf, can you? I can tell by the way you’re standing.`, 'smug');
+      const i = await choose(['Teach me?', 'I could learn in a day.', 'Surfing is just standing on a plank.']);
+      if (i === 0) { await say(c.name, 'Honest. I like that. Lesson one: fall a lot.', 'happy', 'sparkle'); return 2; }
+      if (i === 1) { await say(c.name, 'Ha! You’ll be eating sand in a minute. …I’ll watch.', 'smug'); return 1; }
+      await say(c.name, 'Get in the water and say that.', 'annoyed', 'anger');
+      return 0;
+    },
+    async (c) => {
+      await say('', 'You fall off the board. A lot. Renata laughs until she can’t breathe.');
+      const i = await choose(['Laugh with her and try again.', 'Pretend it was on purpose.', 'Quit and sulk on the sand.']);
+      if (i === 0) { await say(c.name, 'You actually stood up for two seconds! …I’m weirdly proud of you.', 'happy', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, 'Sure. Very… artistic.', 'smug'); return 1; }
+      await say(c.name, 'The ocean doesn’t care if you sulk.', 'annoyed');
+      return 0;
+    },
+    async (c, me) => {
+      await say(c.name, 'Sunset sessions are my favourite. Everyone else has gone home. It’s just the waves.', 'normal');
+      await say(c.name, `…And you, I guess, ${me}.`, 'blush', 'sparkle');
+      const i = await choose(['Then I’ll come every sunset.', 'Should I leave you alone?', 'The waves are pretty boring, honestly.']);
+      if (i === 0) { await say(c.name, '…Okay. Every sunset. Don’t be late.', 'blush', 'heart'); return 2; }
+      if (i === 1) { await say(c.name, '…No. Stay.', 'blush'); return 1; }
+      await say(c.name, '…Get off my beach.', 'annoyed', 'anger');
+      return 0;
+    },
+  ],
+  // Mira likes every answer. That's the problem.
+  mira: [
+    async (c, me) => {
+      await say('', 'A girl with lavender twin tails is standing right behind you. You didn’t hear her walk up.');
+      await say(c.name, `Hi, ${me}! I’m Mira, I just transferred here. …How do I know your name? Lucky guess! ♡`, 'happy', 'sparkle');
+      await say(c.name, 'Your favourite drink is iced Milo, right? And your birthday is— oh, hehe, sorry, I’m talking too much.', 'happy');
+      await choose(['…How do you know that?', 'Nice to meet you, Mira!', '(Slowly step back.)']);
+      await say(c.name, 'You’re so funny! I can tell we’re going to be together a LOT. ♡', 'happy', 'heart');
+      return 2;
+    },
+    async (c, me) => {
+      await say(c.name, `I made you a bento! Look, I drew your face with seaweed. I made one yesterday too, ${me}. And the day before. You just didn’t see me.`, 'happy', 'heart');
+      await choose(['…Thank you?', 'You didn’t have to do that.', 'How long have you been following me?']);
+      await say(c.name, 'Following? Silly. I just happen to be wherever you are. Isn’t that romantic? ♡', 'smug', 'sparkle');
+      return 2;
+    },
+    async (c, me) => {
+      await say(c.name, `I saw you talking to other girls today, ${me}. That’s okay! I wrote their names down. In my notebook.`, 'happy');
+      await say(c.name, 'Just so I remember them. Forever. ♡', 'smug', 'sparkle');
+      await choose(['That’s… a little scary, Mira.', 'Can I see the notebook?', 'I need to go. Now.']);
+      await say(c.name, 'Scary? I’m just organised! Anyway — see you at prom. I already know where you’ll be standing. ♡', 'happy', 'heart');
+      return 2;
+    },
+  ],
+  ana: [
+    async (c, me) => {
+      await say('', 'By the classroom window sits Ana, the transfer student from Japan, watching the clouds.');
       await say(c.name, 'Ah— sorry. In Japan, the window seat is where the main character sits.', 'surprised');
       await say(c.name, '…That was a joke.', 'smug');
       const i = await choose(['Then I guess I’m the side character who talks to you.', 'Your Indonesian is really good!', 'Do you know any ninjas?']);
@@ -1232,7 +1618,7 @@ const SCENES = {
       return 0;
     },
     async (c, me) => {
-      await say('', 'Hana slides a folded note across the desk. It’s written in Japanese.');
+      await say('', 'Ana slides a folded note across the desk. It’s written in Japanese.');
       await say(c.name, 'Don’t translate it until after graduation. Promise.', 'blush');
       const i = await choose(['I promise. I’ll wait.', 'Open it right now.', 'Is it a ransom note?']);
       if (i === 0) { await say(c.name, '…It says “I’m glad I met you.” …Ah. I just told you.', 'blush', 'heart'); return 2; }
@@ -1470,7 +1856,7 @@ async function opening() {
   clip.className = 'on';
   reel.append(clip);
   clip.play().catch(() => {});
-  const beats = [['Seven days before college.', null], ['Eleven friends.', null], ['One pact.', 'nayla'], ['', 'kirana']];
+  const beats = [['Seven days before college.', null], ['Thirteen friends.', null], ['One pact.', 'nayla'], ['', 'kirana']];
   for (const [b, img] of beats) {
     if (skip) break;
     if (img) shot(img);
@@ -1600,6 +1986,7 @@ async function finalAfternoon() {
 
 /* ------------------------------------------------------------- endings */
 async function confession(c) {
+  if (c.id === 'mira') return crazyEnd(c);
   const me = state.me.name;
   await say('', `Music drifts out from the ballroom. On the balcony, under the fairy lights, ${c.name} turns around.`);
   await say(c.name, `${me}. Your friends said you wanted to tell me something. …Then they ran away.`, 'blush', 'sweat');
@@ -1764,7 +2151,7 @@ function frame(now) {
   camX += (clamp(state.x - vw * 0.42, 0, WORLD - vw) - camX) * Math.min(1, dt * 5);
 
   near = state.busy || !state.started ? null : findNear();
-  document.body.classList.toggle('talking', state.busy);
+  document.body.classList.toggle('talking', state.busy && !(road && !road.done));
   if (talkBtn.disabled === !!(near || state.busy)) talkBtn.disabled = !(near || state.busy);
   const z = zoneAt(state.x);
   if (z !== lastZone && state.started) { lastZone = z; $('zone').textContent = z; }
@@ -1779,7 +2166,11 @@ function frame(now) {
   drawInterior(q);
   drawCourtyardAndRoof(q, t);
   drawTown(q, n, t);
+  drawFarTown(q, n, t);
   nightFall(n, t);
+  updateCars(dt);
+  updateMira(dt);
+  maybeStartRoadEvent(dt);
 
   for (const p of friendsHere) {
     const face = Math.abs(state.x - p.x) < 200 ? (state.x < p.x ? -1 : 1) : p.face;
@@ -1790,7 +2181,8 @@ function frame(now) {
     const face = Math.abs(state.x - x) < 220 ? (state.x < x ? -1 : 1) : -1;
     walker(c.name, { x: sx(x), y: sy(0), k: S, face, look: c.look, t, phase: 0, moving: false, talking: speaking === c.name, seed: x, blush: state.aff[c.id] >= 4 && Math.abs(state.x - x) < 140 });
   }
-  if (state.me) walker(state.me.name, { x: sx(state.x), y: sy(0), k: S, face: state.face, look: state.me.look, t, phase: state.phase, moving: state.moving, talking: speaking === state.me.name, seed: 3 });
+  drawRoadEvent(dt, t);
+  if (state.me) walker(state.me.name, { x: sx(state.x), y: sy(0), k: S, face: state.face, look: state.me.look, t, phase: state.phase, moving: state.moving, talking: speaking === state.me.name, seed: 3, running: keys.has('shift') || hold.run });
 
   // hearts over crushes with something new to say, names over people nearby
   if (state.started && !state.ended) {
@@ -1928,6 +2320,6 @@ $('again').addEventListener('click', () => location.reload());
 
 window.addEventListener('resize', resize);
 resize();
-for (const n of [...FRIENDS.map((f) => f.name), ...Object.values(CRUSHES).map((c) => c.name)]) { artFor(n); spriteFor(n); }
+for (const n of [...FRIENDS.map((f) => f.name), ...Object.values(CRUSHES).map((c) => c.name)]) { artFor(n); spriteFor(n); frameFor(n, 'walk'); frameFor(n, 'run'); }
 buildRoster();
 requestAnimationFrame(frame);

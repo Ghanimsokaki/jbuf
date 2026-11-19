@@ -20,7 +20,7 @@ squad to bakso.
    the Game Center, the bookstore, the riverside park and the Grand Bintang
    Hotel.
 4. **Talk to anyone, anytime.** Seven classmates might become your crush —
-   Hana, Putri, Alya, Rania, Kirana, Nayla and Sekar — and each one goes
+   Ana, Putri, Alya, Rania, Kirana, Nayla and Sekar — and each one goes
    somewhere different after school. A ♥ over a girl means she has a new
    moment for you today (three each), with choices that fill her hearts.
    Friends give advice about them.
