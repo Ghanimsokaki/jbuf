@@ -2323,7 +2323,7 @@ async function baksoEnd(c) {
 }
 
 /** the endings Dreamina has animated so far (the others use the still picture) */
-const ENDING_CLIPS = new Set(['ana', 'putri', 'alya', 'rania', 'kirana', 'nayla']);
+const ENDING_CLIPS = new Set(['ana', 'putri', 'alya', 'rania', 'kirana', 'nayla', 'sekar', 'nadia']);
 function happyEnd(c) {
   closeDialog();
   state.ended = true;
