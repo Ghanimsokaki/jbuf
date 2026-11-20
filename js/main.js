@@ -294,6 +294,8 @@ const state = {
   talkedFriend: new Set(),
   busy: true, started: false, ended: false,
   last: null, // crush talked to most recently
+  room: null, // which building you are inside, if any
+  gift: null, giftDay: -1,
 };
 /** a girl says yes at the confession with at least WIN points (two full hearts) */
 const WIN = 4, MAX_AFF = 6;
@@ -321,7 +323,7 @@ const ZONES = [
   ['Bintang Mall', 9300, 10000],
   ['The beach', 10000, WORLD + 100],
 ];
-const zoneAt = (x) => ZONES.find(([, a, b]) => x >= a && x < b)?.[0] || 'Rooftop';
+const zoneAt = (x) => roomAt(x)?.name || ZONES.find(([, a, b]) => x >= a && x < b)?.[0] || 'Rooftop';
 const SAKURA_X = 3150;
 
 let camX = 0;
@@ -351,7 +353,7 @@ let friendsHere = []; // { f, x, face } for this part of the day
 function placeFriends() {
   const r = seeded(state.day * 7 + (afterSchool() ? 3 : 0) + 1);
   const spots = afterSchool()
-    ? [3880, 4100, 4250, 4380, 4960, 5150, 5300, 5420, 5800, 6080, 6450, 6720, 6900, 7200, 7900, 8250, 8600, 9100, 9500, 9850, 10250, 10700]
+    ? [3880, 4100, 4250, 4380, 4960, 5300, 5800, 6080, 6450, 6720, 6900, 7330, 7900, 8250, 8600, 9100, 9500, 9850, 10250, 10700, 20800, 22560, 23020, 24880, 26560, 28200, 28820]
     : [180, 330, 560, 700, 950, 1120, 1330, 1600, 2000, 2200, 2620, 2800, 3300, 3480, 3850];
   const taken = Object.values(CRUSHES).map((c) => crushX(c));
   const free = spots.filter((s) => taken.every((b) => Math.abs(b - s) > 140));
@@ -360,7 +362,7 @@ function placeFriends() {
 }
 const TOWN_SPOT = { ana: 4640, rania: 4820, alya: 5560, kirana: 5960, sekar: 6290, nayla: 6560, putri: 7000, thisa: 8460, nadia: 9700, renata: 10420 };
 const HOTEL_BALCONY = 7460;
-const crushX = (c) => (isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : c.id === 'mira' ? miraX : afterSchool() ? TOWN_SPOT[c.id] : c.x);
+const crushX = (c) => (isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : c.id === 'mira' ? miraX : afterSchool() ? (INSIDE_SPOT[c.id] ? insideX(c.id) : TOWN_SPOT[c.id]) : c.x);
 async function addAff(c, n) {
   const before = state.aff[c.id];
   state.aff[c.id] = Math.min(MAX_AFF, before + n);
@@ -829,6 +831,207 @@ function drawFarTown(q, n, t) {
 /* ------------------------------------------------- cars on the town road */
 const cars = [];
 let nextCar = 3;
+/* ------------------------------------------------- inside the buildings */
+// each room is its own little stage far past the end of town
+const ROOMS = {
+  cafe: { name: 'Kopi Senja · inside', label: 'Kopi Senja', door: 4700, x0: 20000, w: 1300 },
+  games: { name: 'Game Center · inside', label: 'Game Center', door: 5160, x0: 22000, w: 1200 },
+  books: { name: 'Toko Buku · inside', label: 'Toko Buku', door: 5570, x0: 24000, w: 1100 },
+  hotel: { name: 'Grand Bintang · ballroom', label: 'the hotel', door: 7190, x0: 26000, w: 1500 },
+  mall: { name: 'Bintang Mall · inside', label: 'Bintang Mall', door: 9650, x0: 28000, w: 1400 },
+};
+/** after school some girls are inside: [room, distance from the room's left wall] */
+const INSIDE_SPOT = { rania: ['cafe', 610], ana: ['cafe', 1000], alya: ['books', 640], putri: ['hotel', 950], nadia: ['mall', 1030] };
+const insideX = (id) => { const [r, off] = INSIDE_SPOT[id]; return ROOMS[r].x0 + off; };
+const roomAt = (x) => Object.values(ROOMS).find((r) => x >= r.x0 && x < r.x0 + r.w);
+/** things to do inside: a gift (one a day) to give a girl for +1, or just a moment */
+const THINGS = [
+  { room: 'cafe', off: 380, name: 'Counter', gift: 'an iced Milo', line: 'The barista slides a tall iced Milo across the counter. You know exactly who it’s for.' },
+  { room: 'games', off: 380, name: 'Claw machine', gift: 'a pink teddy bear', line: 'The claw wobbles… slips… and drops a pink teddy bear into the chute. FIRST TRY.' },
+  { room: 'games', off: 800, name: 'Arcade', line: 'You play “Bakso Fighter II” and set a new high score. You enter your initials. Then you add a heart.' },
+  { room: 'books', off: 300, name: 'Poetry shelf', gift: 'a little poetry book', line: 'You find a tiny book of love poems. One page is folded down already. Fate?' },
+  { room: 'hotel', off: 330, name: 'Grand piano', line: 'You play the only song you know: Twinkle Twinkle Little Star. A waiter claps, slowly. Respect.' },
+  { room: 'mall', off: 330, name: 'Crepe stand', gift: 'a strawberry crepe', line: 'One strawberry crepe, extra cream, wrapped with a little heart sticker.' },
+  { room: 'mall', off: 640, name: 'Photo booth', line: 'Click! A sticker photo of you doing a peace sign, alone. Next time, with someone.' },
+];
+function camTarget() {
+  const vw = viewW();
+  const r = state.room && ROOMS[state.room];
+  if (!r) return clamp(state.x - vw * 0.42, 0, WORLD - vw);
+  return r.w <= vw ? r.x0 + (r.w - vw) / 2 : clamp(state.x - vw * 0.42, r.x0, r.x0 + r.w - vw);
+}
+async function goThrough(n) {
+  state.busy = true;
+  fade.classList.add('on');
+  await wait(420);
+  if (n.room) { state.room = n.room; state.x = ROOMS[n.room].x0 + 170; }
+  else { state.x = ROOMS[state.room].door + 30; state.room = null; }
+  state.face = 1;
+  camX = camTarget();
+  fade.classList.remove('on');
+  await wait(200);
+  state.busy = false;
+}
+async function useThing(th) {
+  const me = state.me.name;
+  if (!th.gift) { await say('', th.line); return; }
+  if (state.gift) { await say('', `You’re already carrying ${state.gift}. Give it to someone first!`); return; }
+  if (state.giftDay === state.day) { await say('', 'Your wallet says no. One gift a day, big spender. Come back tomorrow.'); return; }
+  await say('', th.line);
+  state.gift = th.gift;
+  state.giftDay = state.day;
+  toast(`🎁 Got ${th.gift}! Give it to a girl for ♥ +1`);
+  updateHud();
+  await say(me, 'Now… who should I give this to?', 'blush', 'sweat');
+}
+
+function door(x, glow) {
+  rect(x - 32, 0, 64, 118, '#5a3a2a');
+  rect(x - 25, 6, 50, 104, glow);
+  rect(x - 1, 6, 2, 104, '#5a3a2a');
+  ctx.fillStyle = '#ffd98a'; ctx.beginPath(); ctx.arc(sx(x + 14), sy(52), 3 * S, 0, Math.PI * 2); ctx.fill();
+  rect(x - 22, 124, 44, 18, '#3a8a5a');
+  text('OPEN', x, 133, 10, '#ffffff');
+}
+function pendant(x, h, col, n) {
+  ctx.strokeStyle = '#3a2a20'; ctx.lineWidth = 2 * S;
+  ctx.beginPath(); ctx.moveTo(sx(x), sy(420)); ctx.lineTo(sx(x), sy(h + 14)); ctx.stroke();
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.moveTo(sx(x - 18), sy(h)); ctx.lineTo(sx(x + 18), sy(h)); ctx.lineTo(sx(x + 8), sy(h + 16)); ctx.lineTo(sx(x - 8), sy(h + 16)); ctx.fill();
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const g = ctx.createRadialGradient(sx(x), sy(h), 0, sx(x), sy(h), 150 * S);
+  g.addColorStop(0, `rgba(255,210,140,${0.35 + n * 0.2})`); g.addColorStop(1, 'rgba(255,190,120,0)');
+  ctx.fillStyle = g; ctx.fillRect(sx(x - 160), sy(h + 160), 320 * S, 320 * S);
+  ctx.restore();
+}
+function table(x, w = 90, top = '#c99a6a', leg = '#6a4228') {
+  rect(x - w / 2, 62, w, 8, top);
+  rect(x - 4, 0, 8, 62, leg);
+  rect(x - 20, 0, 40, 5, leg);
+}
+function floorBoards(r, col, line, step = 60) {
+  ctx.fillStyle = col;
+  ctx.fillRect(sx(r.x0), sy(0), r.w * S, H);
+  ctx.fillStyle = line;
+  for (let x = r.x0; x < r.x0 + r.w; x += step) ctx.fillRect(sx(x), sy(0), 2 * S, H);
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
+  ctx.fillRect(sx(r.x0), sy(0), r.w * S, 10 * S);
+}
+
+function drawRoom(r, q, n, t) {
+  ctx.fillStyle = '#140f1e';
+  ctx.fillRect(0, 0, W, H);
+  const x0 = r.x0, w = r.w, id = state.room;
+  const wall = { cafe: '#f2e2c8', games: '#2a1e4a', books: '#e8eef7', hotel: '#f3e6cf', mall: '#f0eaf6' }[id];
+  const top = Math.max(440, baseY() / S + 40); // walls all the way up to the top of the screen
+  rect(x0, 0, w, top, wall);
+  rect(x0, 410, w, 20, darker(wall, 0.82));
+  if (id === 'cafe') {
+    rect(x0, 0, w, 80, '#8a5a3a'); rect(x0, 80, w, 6, '#6a4228');
+    for (const wx of [x0 + 880, x0 + 1080]) windowPane(wx, 130, 150, 170, q);
+    rect(x0 + 230, 170, 320, 150, '#2e3a32'); rect(x0 + 224, 164, 332, 6, '#a8865a');
+    text('MENU', x0 + 390, 300, 18, '#ffd98a');
+    text('Kopi susu ........ 18k', x0 + 390, 268, 13, '#ffffff', 700);
+    text('Iced Milo ......... 15k', x0 + 390, 244, 13, '#ffffff', 700);
+    text('Matcha latte ..... 20k', x0 + 390, 220, 13, '#ffffff', 700);
+    text('Cheese bakso? ... ask Rania', x0 + 390, 192, 11, '#ff9fc2', 700);
+    rect(x0 + 250, 0, 420, 96, '#6a4228'); rect(x0 + 240, 96, 440, 12, '#c99a6a');
+    rect(x0 + 300, 108, 70, 56, '#9aa0b0'); rect(x0 + 310, 118, 50, 30, '#5a6070');
+    for (const [k, col] of ['#ff9fc2', '#ffd98a', '#9fe0ff'].entries()) { rect(x0 + 470 + k * 34, 108, 22, 30, col); rect(x0 + 468 + k * 34, 136, 26, 5, '#ffffff'); }
+    for (const px of [x0 + 330, x0 + 620, x0 + 930, x0 + 1150]) pendant(px, 330, '#3a5a46', n);
+    for (const tx of [x0 + 820, x0 + 1180]) { table(tx); rect(tx - 70, 0, 8, 46, '#6a4228'); rect(tx - 78, 40, 30, 6, '#8a5a3a'); rect(tx + 62, 0, 8, 46, '#6a4228'); rect(tx + 48, 40, 30, 6, '#8a5a3a'); rect(tx - 10, 70, 20, 16, '#ffffff'); }
+    for (const px of [x0 + 160, x0 + 720]) { rect(px - 16, 0, 32, 36, '#c4814e'); ctx.fillStyle = '#4f8a46'; ctx.beginPath(); ctx.arc(sx(px), sy(60), 30 * S, 0, Math.PI * 2); ctx.fill(); }
+    text('Kopi Senja ☕', x0 + 650, 390, 20, '#6a4228');
+    floorBoards(r, '#a8754a', '#94653e');
+  } else if (id === 'games') {
+    for (let k = 0; k < 3; k++) rect(x0, 320 + k * 30, w, 4, ['#ff5f96', '#5fd8ff', '#ffd95f'][k]);
+    text('★ GAME CENTER ★', x0 + 650, 390, 22, '#ff9fc2');
+    // claw machine
+    const cx = x0 + 380;
+    rect(cx - 70, 0, 140, 260, '#ff9fc2'); rect(cx - 60, 90, 120, 150, 'rgba(220,240,255,0.55)');
+    for (let k = 0; k < 7; k++) { ctx.fillStyle = ['#ffd95f', '#9fe0ff', '#ffffff', '#c8a0ff'][k % 4]; ctx.beginPath(); ctx.arc(sx(cx - 45 + k * 15), sy(102 + (k % 2) * 10), 10 * S, 0, Math.PI * 2); ctx.fill(); }
+    const clawX = cx + Math.sin(t * 1.3) * 40;
+    ctx.strokeStyle = '#5a6070'; ctx.lineWidth = 3 * S; ctx.beginPath(); ctx.moveTo(sx(clawX), sy(240)); ctx.lineTo(sx(clawX), sy(190)); ctx.moveTo(sx(clawX - 12), sy(178)); ctx.lineTo(sx(clawX), sy(190)); ctx.lineTo(sx(clawX + 12), sy(178)); ctx.stroke();
+    text('CLAW', cx, 250, 14, '#ffffff');
+    // arcade cabinets with glowing screens
+    for (let k = 0; k < 5; k++) {
+      const ax = x0 + 580 + k * 120;
+      rect(ax - 45, 0, 90, 230, ['#3a5aa8', '#e8504f', '#4f8a46', '#7a5bb5', '#ff8a3a'][k]);
+      const hue = (t * 60 + k * 70) % 360;
+      ctx.fillStyle = `hsl(${hue},80%,62%)`; ctx.fillRect(sx(ax - 32), sy(200), 64 * S, 56 * S);
+      rect(ax - 40, 110, 80, 22, '#1a1424');
+      ctx.fillStyle = '#ff3f5f'; ctx.beginPath(); ctx.arc(sx(ax + 16), sy(124), 5 * S, 0, Math.PI * 2); ctx.fill();
+      rect(ax - 20, 118, 4, 14, '#cccccc');
+    }
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createLinearGradient(0, sy(260), 0, sy(0)); g.addColorStop(0, 'rgba(255,95,150,0.12)'); g.addColorStop(1, 'rgba(95,216,255,0.06)');
+    ctx.fillStyle = g; ctx.fillRect(sx(x0), sy(430), w * S, 430 * S); ctx.restore();
+    ctx.fillStyle = '#2a2244'; ctx.fillRect(sx(x0), sy(0), w * S, H);
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    for (let k = 0; k < 40; k++) { const fx = x0 + ((k * 137) % w), fy = -((k * 53) % 120) - 8; ctx.fillRect(sx(fx), sy(fy), 3 * S, 3 * S); }
+  } else if (id === 'books') {
+    windowPane(x0 + 900, 130, 140, 170, q);
+    const cols = ['#e8504f', '#3a5aa8', '#ffcf3f', '#4f8a46', '#7a5bb5'];
+    for (const [k, bx] of [x0 + 220, x0 + 380, x0 + 540, x0 + 700].entries()) {
+      rect(bx, 0, 140, 300, '#8a5a3a');
+      for (let rr = 0; rr < 5; rr++) {
+        rect(bx + 6, 18 + rr * 56, 128, 6, '#6a4228');
+        for (let b = 0; b < 10; b++) rect(bx + 10 + b * 12.4, 24 + rr * 56, 10, 34 + ((b * 7 + rr + k) % 3) * 5, cols[(b + rr + k) % 5]);
+      }
+      text(['POETRY ♥', 'MANGA', 'NOVELS', 'STUDY'][k], bx + 70, 318, 12, '#3a6ab0');
+    }
+    rect(x0 + 960, 0, 110, 50, '#c4814e'); rect(x0 + 960, 50, 22, 50, '#c4814e'); rect(x0 + 1048, 50, 22, 50, '#c4814e'); rect(x0 + 970, 46, 90, 14, '#e09a64');
+    pendant(x0 + 470, 340, '#3a6ab0', n); pendant(x0 + 860, 340, '#3a6ab0', n);
+    text('Toko Buku', x0 + 600, 395, 20, '#3a6ab0');
+    floorBoards(r, '#c99a6a', '#b8895a');
+  } else if (id === 'hotel') {
+    for (let k = 0; k < 8; k++) rect(x0 + 40 + k * 185, 60, 10, 340, '#e2c78a');
+    rect(x0, 400, w, 8, '#c9a24a');
+    // the stage
+    rect(x0 + 700, 0, 520, 70, '#5a2a3a'); rect(x0 + 690, 70, 540, 10, '#c9a24a');
+    rect(x0 + 690, 80, 70, 320, '#b8304f'); rect(x0 + 1160, 80, 70, 320, '#b8304f');
+    rect(x0 + 760, 330, 400, 60, '#ff5f96');
+    text(state.day === LAST_DAY ? 'PROM NIGHT ♥ TONIGHT' : 'PROM NIGHT ♥ SUNDAY', x0 + 960, 360, 18, '#ffffff');
+    // chandeliers
+    for (const cxh of [x0 + 400, x0 + 960]) {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      const g = ctx.createRadialGradient(sx(cxh), sy(330), 0, sx(cxh), sy(330), 220 * S);
+      g.addColorStop(0, 'rgba(255,230,170,0.45)'); g.addColorStop(1, 'rgba(255,210,140,0)');
+      ctx.fillStyle = g; ctx.fillRect(sx(cxh - 230), sy(560), 460 * S, 460 * S); ctx.restore();
+      for (let k = -3; k <= 3; k++) { ctx.fillStyle = '#fff3c8'; ctx.beginPath(); ctx.arc(sx(cxh + k * 16), sy(320 - Math.abs(k) * 6 + Math.sin(t * 2 + k) * 1.5), 5 * S, 0, Math.PI * 2); ctx.fill(); }
+      rect(cxh - 60, 340, 120, 6, '#c9a24a');
+    }
+    // piano and round tables with white cloths
+    const px = x0 + 330;
+    rect(px - 70, 50, 150, 40, '#141018'); rect(px - 70, 0, 8, 50, '#141018'); rect(px + 64, 0, 8, 50, '#141018');
+    for (let k = 0; k < 12; k++) rect(px - 60 + k * 11, 82, 9, 8, '#ffffff');
+    for (const tx of [x0 + 560, x0 + 1340]) { rect(tx - 55, 0, 110, 66, '#ffffff'); rect(tx - 55, 66, 110, 6, '#f0e6d8'); ctx.fillStyle = '#ff7aa8'; ctx.beginPath(); ctx.arc(sx(tx), sy(84), 10 * S, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = '#7a2a3a'; ctx.fillRect(sx(x0), sy(0), w * S, H);
+    ctx.fillStyle = '#c9a24a'; ctx.fillRect(sx(x0), sy(0), w * S, 4 * S);
+  } else if (id === 'mall') {
+    const shops = [['Crepes', '#ff9fc2', 330], ['Photo Booth', '#5fd8ff', 640], ['Fashion', '#c8a0ff', 1250]];
+    for (const [nm, col, off] of shops) {
+      rect(x0 + off - 110, 0, 220, 280, '#ffffff'); rect(x0 + off - 100, 0, 200, 220, darker(col, 0.95));
+      rect(x0 + off - 110, 280, 220, 40, col); text(nm, x0 + off, 300, 16, '#3a2a50');
+      rect(x0 + off - 70, 0, 140, 150, 'rgba(255,255,255,0.45)');
+    }
+    // escalator
+    ctx.fillStyle = '#b8b0c8'; ctx.beginPath(); ctx.moveTo(sx(x0 + 760), sy(0)); ctx.lineTo(sx(x0 + 840), sy(0)); ctx.lineTo(sx(x0 + 900), sy(260)); ctx.lineTo(sx(x0 + 820), sy(260)); ctx.fill();
+    // the open-mic stage
+    rect(x0 + 940, 0, 240, 40, '#3a2050'); rect(x0 + 930, 40, 260, 8, '#ffd98a');
+    rect(x0 + 950, 260, 220, 50, '#3a2050'); text('OPEN MIC ♪', x0 + 1060, 285, 16, '#ffd98a');
+    ctx.strokeStyle = '#2a2a30'; ctx.lineWidth = 3 * S; ctx.beginPath(); ctx.moveTo(sx(x0 + 1100), sy(40)); ctx.lineTo(sx(x0 + 1100), sy(120)); ctx.stroke();
+    ctx.fillStyle = '#2a2a30'; ctx.beginPath(); ctx.arc(sx(x0 + 1100), sy(124), 6 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = 'rgba(255,240,180,0.13)'; ctx.beginPath(); ctx.moveTo(sx(x0 + 1040), sy(420)); ctx.lineTo(sx(x0 + 1080), sy(420)); ctx.lineTo(sx(x0 + 1170), sy(0)); ctx.lineTo(sx(x0 + 950), sy(0)); ctx.fill(); ctx.restore();
+    text('BINTANG MALL', x0 + 700, 395, 20, '#ff5f96');
+    floorBoards(r, '#ddd5e6', '#cbc2d6', 90);
+  }
+  // the way out
+  rect(x0 + 60, 0, 60, 130, '#5a3a2a'); rect(x0 + 66, 6, 48, 118, mix('#bfe2ff', '#ffc89a', q));
+  rect(x0 + 66, 138, 48, 18, '#3a8a5a'); text('EXIT', x0 + 90, 147, 10, '#ffffff');
+}
+
 function drawCar(x, h, col, dir) {
   ctx.save();
   ctx.translate(sx(x), sy(h));
@@ -864,7 +1067,7 @@ function updateCars(dt) {
 let road = null; // { c, x, carX, t, done }
 let roadDay = -1;
 function maybeStartRoadEvent(dt) {
-  if (road || roadDay === state.day || !afterSchool() || state.day === LAST_DAY || state.busy || state.ended || state.x < 4300 || state.x > BEACH) return;
+  if (road || state.room || roadDay === state.day || !afterSchool() || state.day === LAST_DAY || state.busy || state.ended || state.x < 4300 || state.x > BEACH) return;
   // usually within ten seconds of reaching town, and for sure by 17:30
   if (Math.random() > dt / 10 && state.clock < 17.5) return;
   const pool = Object.values(CRUSHES).filter((c) => !c.secret && Math.abs(crushX(c) - state.x) > 300);
@@ -1223,6 +1426,13 @@ let near = null;
 function interactables() {
   const list = friendsHere.map((p) => ({ kind: 'friend', id: p.f.name, x: p.x, who: p.f }));
   for (const c of Object.values(CRUSHES)) { const x = crushX(c); if (x > -1000) list.push({ kind: 'crush', id: c.id, x, who: c }); }
+  if (state.room) {
+    const r = ROOMS[state.room];
+    list.push({ kind: 'door', id: 'out', x: r.x0 + 90, who: { name: 'Go outside' }, room: null });
+    for (const th of THINGS) if (th.room === state.room) list.push({ kind: 'thing', id: th.name, x: r.x0 + th.off, who: { name: th.gift ? `${th.name} 🎁` : th.name }, th });
+  } else {
+    for (const [k, r] of Object.entries(ROOMS)) list.push({ kind: 'door', id: `in-${k}`, x: r.door, who: { name: `Enter ${r.label}` }, room: k });
+  }
   return list;
 }
 function findNear() {
@@ -1233,6 +1443,7 @@ function findNear() {
     // the girl you came to see wins over whoever is standing next to her
     if (n.kind === 'crush' && n.id === top) d = d < 130 ? 0 : d;
     else if (n.kind === 'crush' && sceneReady(n.who)) d -= 25;
+    else if (n.kind === 'door' || n.kind === 'thing') d += 15; // people first
     if (d < bd) { bd = d; best = n; }
   }
   return best;
@@ -1413,6 +1624,7 @@ function updateHud() {
       : state.day === LAST_DAY
         ? 'Last day! Get ♥♥ with someone before 18:00'
         : 'Goal: ♥♥ with one girl by Sunday 18:00';
+  if (state.gift) $('goal').textContent += ` · 🎁 ${state.gift}`;
   for (const c of Object.values(CRUSHES)) {
     if (!state.met.has(c.id)) continue;
     const a = Math.min(MAX_AFF, state.aff[c.id]);
@@ -1429,6 +1641,14 @@ let lastZone = '';
 /* ----------------------------------------------------------- talking */
 async function talk(n) {
   if (state.busy || state.ended) return;
+  if (n.kind === 'door') { await goThrough(n); return; }
+  if (n.kind === 'thing') {
+    state.busy = true; state.moving = false; stage.right = null;
+    await useThing(n.th);
+    closeDialog();
+    if (!state.ended) state.busy = false;
+    return;
+  }
   state.busy = true;
   state.moving = false;
   state.face = n.x > state.x ? 1 : -1;
@@ -1493,6 +1713,18 @@ async function talkCrush(c) {
     if (c.id === topCrush()?.id) { await confession(c); return false; }
     await say(c.name, '…Shouldn’t you be somewhere right now?');
     return false;
+  }
+  if (state.gift) {
+    if (!state.met.has(c.id)) { await introCard(c); state.met.add(c.id); }
+    const g = state.gift;
+    state.gift = null;
+    await say('', `You hand ${c.name} ${g}.`);
+    await say(c.name, c.id === 'mira' ? 'A present?! I’ll keep it forever. FOREVER. ♡' : `For me? …${state.me.name}, you remembered I like this?`, 'blush', 'heart');
+    state.last = c.id;
+    toast(`🎁 ${c.name} ♥ +1`);
+    closeDialog();
+    await addAff(c, 1);
+    return true;
   }
   if (state.scene[c.id] >= 3 && state.seenDay[c.id] !== state.day) {
     // after her three moments you can still hang out once a day
@@ -1963,6 +2195,7 @@ async function nextDay() {
   fade.classList.add('on');
   await wait(900);
   state.day++;
+  state.room = null;
   state.clock = DAY_START;
   state.x = 400;
   state.face = 1;
@@ -2081,7 +2314,7 @@ async function baksoEnd(c) {
     ? `${c.name} wants to get to know you first. That’s not a no! But a pact is a pact. ${state.me.end.bakso}`
     : `No crush before college… ${state.me.end.bakso}`;
   const had = c ? Math.min(MAX_AFF, state.aff[c.id]) : 0;
-  $('res-tip').textContent = `How to win: a girl says yes with ♥♥ (4 points). ${c ? `${c.name} was at ${had} of 4.` : 'You didn’t get close to anyone.'} Pick the answers that make her light up (+2), talk to her every day (one new moment a day, then you can hang out for +1), and save her on the road for +3.`;
+  $('res-tip').textContent = `How to win: a girl says yes with ♥♥ (4 points). ${c ? `${c.name} was at ${had} of 4.` : 'You didn’t get close to anyone.'} Pick the answers that make her light up (+2), talk to her every day (one new moment a day, then you can hang out for +1), buy her a gift in the shops (+1), and save her on the road for +3.`;
   $('res-tip').hidden = false;
   results(null);
   document.body.classList.add('show-results');
@@ -2089,6 +2322,8 @@ async function baksoEnd(c) {
   fade.classList.remove('on');
 }
 
+/** the endings Dreamina has animated so far (the others use the still picture) */
+const ENDING_CLIPS = new Set(['ana', 'putri', 'alya', 'rania', 'kirana', 'nayla']);
 function happyEnd(c) {
   closeDialog();
   state.ended = true;
@@ -2111,6 +2346,7 @@ function happyEnd(c) {
       gifts: { ribbon: c.id === 'alya' },
       personal: [state.me.end.b, state.me.end.a],
       cg: `./art/ending/${c.id}.webp`,
+      clip: ENDING_CLIPS.has(c.id) ? `./art/ending/${c.id}.${document.createElement('video').canPlayType('video/mp4; codecs="avc1.64001F"') ? 'mp4' : 'webm'}` : null,
       cgNight: c.id === 'nayla',
     });
     fade.classList.remove('on');
@@ -2133,6 +2369,7 @@ window.addEventListener('keydown', (e) => {
   if (!state.started || state.ended) return;
   const k = e.key.toLowerCase();
   if (['arrowleft', 'arrowright', 'a', 'd', 'shift'].includes(k)) { keys.add(k); e.preventDefault(); }
+  if ((k === 'arrowup' || k === 'w') && !state.busy) { const d = findNear(); if (d?.kind === 'door') { e.preventDefault(); talk(d); } }
   if (k === 'e' || k === ' ' || k === 'enter') {
     if (e.target.tagName === 'BUTTON' && dlgChoices.contains(e.target)) return;
     e.preventDefault();
@@ -2189,11 +2426,12 @@ function frame(now) {
   if (dir) {
     state.face = dir;
     const run = keys.has('shift') || hold.run ? 1.9 : 1;
-    state.x = clamp(state.x + dir * 190 * run * dt, 60, WORLD - 60);
+    const r = state.room && ROOMS[state.room];
+    state.x = r ? clamp(state.x + dir * 190 * run * dt, r.x0 + 60, r.x0 + r.w - 60) : clamp(state.x + dir * 190 * run * dt, 60, WORLD - 60);
     state.phase += dt * 11;
   }
   const vw = viewW();
-  camX += (clamp(state.x - vw * 0.42, 0, WORLD - vw) - camX) * Math.min(1, dt * 5);
+  camX += (camTarget() - camX) * Math.min(1, dt * 5);
 
   near = state.busy || !state.started ? null : findNear();
   document.body.classList.toggle('talking', state.busy && !(road && !road.done));
@@ -2207,13 +2445,27 @@ function frame(now) {
   const n = showcase ? 0 : nightness();
   if (Math.floor(t) !== Math.floor(t - dt)) $('quest').textContent = state.me ? `Day ${state.day + 1} · ${DAYS[state.day]} · ${clockText(state.clock)}` : '';
   ctx.clearRect(0, 0, W, H);
-  drawOutside(q, t);
-  drawInterior(q);
-  drawCourtyardAndRoof(q, t);
-  drawTown(q, n, t);
-  drawFarTown(q, n, t);
-  nightFall(n, t);
-  updateCars(dt);
+  if (state.room) drawRoom(ROOMS[state.room], q, n, t);
+  else {
+    drawOutside(q, t);
+    drawInterior(q);
+    drawCourtyardAndRoof(q, t);
+    drawTown(q, n, t);
+    drawFarTown(q, n, t);
+    nightFall(n, t);
+    updateCars(dt);
+    // doors you can walk through, with a heart when someone inside has time for you
+    if (camX + viewW() > TOWN) {
+      door(ROOMS.cafe.door, n > 0 ? 'rgba(255,214,140,0.95)' : '#ffe9c4');
+      door(ROOMS.games.door, '#ff9fc2');
+      door(ROOMS.books.door, n > 0 ? 'rgba(255,214,140,0.95)' : '#dfeaf7');
+      if (state.started && afterSchool() && !isFinal()) {
+        for (const [k, r] of Object.entries(ROOMS)) {
+          if (Object.entries(INSIDE_SPOT).some(([id, [rk]]) => rk === k && sceneReady(CRUSHES[id])) && near?.id !== `in-${k}`) heartMark(r.door, t);
+        }
+      }
+    }
+  }
   updateMira(dt);
   maybeStartRoadEvent(dt);
 
@@ -2239,7 +2491,7 @@ function frame(now) {
     for (const n of interactables()) {
       if (Math.abs(n.x - state.x) < 260 && near?.id !== n.id) text(n.who.name, n.x, -22, 12, 'rgba(255,255,255,0.95)');
     }
-    if (near && !state.busy) bubble(near.x, `${touch ? 'Talk' : 'E'} · ${near.who.name}`, t, near.kind === 'crush' ? '#e8417a' : '#3a5aa8');
+    if (near && !state.busy) bubble(near.x, near.kind === 'door' ? `${touch ? '' : '↑ / E · '}${near.who.name}` : `${touch ? 'Talk' : 'E'} · ${near.who.name}`, t, near.kind === 'crush' ? '#e8417a' : near.kind === 'door' ? '#3a8a5a' : near.kind === 'thing' ? '#c8780a' : '#3a5aa8');
   }
 
   // late-afternoon light
@@ -2332,7 +2584,7 @@ async function pick(f) {
   await say(other('Hamzah', 'Qai'), '…treats the whole squad to bakso. Extra meatballs.', 'smug');
   await say(other('Lindan', 'Nizam'), `${me}, you go first. Don’t make us eat for free. …Actually, do.`);
   await say(me, '…Why does this feel like a trap?', 'annoyed', 'sweat');
-  await say('', 'Each day lasts nine minutes, from 07:00 to 21:00. Talk to anyone, anytime: a ♥ over a girl means she has time for you today. After 15:00 everyone heads into town.');
+  await say('', 'Each day lasts nine minutes, from 07:00 to 21:00. Talk to anyone, anytime: a ♥ over a girl means she has time for you today. After 15:00 everyone heads into town — and some girls are INSIDE the shops: walk up to a door and press ↑ or E to go in.');
   await say('', 'HOW TO WIN: get ♥♥ (4 points) with one girl — her best answers give +2. On Sunday at 18:00 she waits on the hotel balcony. Confess there. Fewer than ♥♥ = bakso for everyone.');
   closeDialog();
   placeFriends();
@@ -2380,16 +2632,21 @@ async function testRun(mode) {
   if (touch) $('pad').hidden = false;
   state.met.add(c.id);
   state.last = c.id;
-  const at = (day, clock, x) => {
-    state.day = day; state.clock = clock; lastHour = Math.floor(clock);
-    state.x = clamp(x, 60, WORLD - 60); state.face = 1;
-    camX = clamp(state.x - viewW() * 0.42, 0, WORLD - viewW());
+  const at = (day, clock, x, room = null) => {
+    state.day = day; state.clock = clock; lastHour = Math.floor(clock); state.room = room;
+    state.x = room ? x : clamp(x, 60, WORLD - 60); state.face = 1;
+    camX = camTarget();
     placeFriends();
     updateHud();
   };
   const girl = c.secret ? CRUSHES.ana : c; // Mira never needs saving
   if (mode === 'roam') { at(0, DAY_START, 400); toast('Test · free roam, Monday morning'); }
-  else if (mode === 'town') { at(c.secret ? 2 : 1, SCHOOL_OUT + 0.1, (TOWN_SPOT[c.id] || 4700) - 160); toast('Test · after school in town'); }
+  else if (mode === 'town') {
+    if (INSIDE_SPOT[c.id]) at(1, SCHOOL_OUT + 0.1, insideX(c.id) - 260, INSIDE_SPOT[c.id][0]);
+    else at(c.secret ? 2 : 1, SCHOOL_OUT + 0.1, (TOWN_SPOT[c.id] || 4700) - 160);
+    toast(INSIDE_SPOT[c.id] ? `Test · inside ${ROOMS[INSIDE_SPOT[c.id][0]].label}` : 'Test · after school in town');
+  }
+  else if (mode === 'inside') { at(1, SCHOOL_OUT + 0.5, ROOMS.cafe.door - 300); roadDay = state.day; toast('Test · walk right to the café door, press ↑ or E'); }
   else if (mode === 'scene') {
     at(c.secret ? 2 : 1, 9, (c.secret ? 400 : c.x) - 140);
     await introCard(c);

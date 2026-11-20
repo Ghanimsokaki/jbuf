@@ -14,6 +14,7 @@ let gifts = {};
 // colours for the two figures (hex); anything missing keeps the default
 let looks = {};
 let cg = null, cgNight = false; // an illustrated ending scene, when there is one
+let clip = null; // the animated Dreamina version of it: plays once, then holds its last frame
 let personal = null; // [her line, his line] that belong to whoever you played
 const toHex = (r, g, b) => '#' + [r, g, b].map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
 /** the same colour under a night sky */
@@ -829,12 +830,15 @@ function frame(now) {
   look.y += (look.ty - look.y) * Math.min(1, dt * 2);
 
   ctx.clearRect(0, 0, W, H);
-  if (cg && cg.complete && cg.naturalWidth) {
+  const moving = clip && clip.readyState >= 2 && clip.videoWidth;
+  if (moving || (cg && cg.complete && cg.naturalWidth)) {
     // the illustrated scene, with a slow anime-film camera push and the light fading to night
+    const src = moving ? clip : cg;
+    const sw = moving ? clip.videoWidth : cg.naturalWidth, sh = moving ? clip.videoHeight : cg.naturalHeight;
     const z = 1.06 + Math.min(T, 60) * 0.0025;
-    const k = Math.max(W / cg.naturalWidth, H / cg.naturalHeight) * z;
-    const dw = cg.naturalWidth * k, dh = cg.naturalHeight * k;
-    ctx.drawImage(cg, (W - dw) / 2 - look.x * 12, (H - dh) * 0.55 - look.y * 8, dw, dh);
+    const k = Math.max(W / sw, H / sh) * z;
+    const dw = sw * k, dh = sh * k;
+    ctx.drawImage(src, (W - dw) / 2 - look.x * 12, (H - dh) * 0.55 - look.y * 8, dw, dh);
     if (!cgNight && p > 0) {
       ctx.fillStyle = `rgba(16,18,70,${p * 0.5})`;
       ctx.fillRect(0, 0, W, H);
@@ -904,6 +908,14 @@ export function startEnding(opts) {
   looks = opts.looks || {};
   personal = opts.personal || null;
   if (opts.cg) { cg = new Image(); cg.src = opts.cg; cgNight = !!opts.cgNight; }
+  if (opts.clip && !reduced) {
+    clip = document.createElement('video');
+    Object.assign(clip, { src: opts.clip, muted: true, playsInline: true, preload: 'auto' });
+    const slow = () => { clip.playbackRate = 0.6; }; // a slow, dreamy anime cut
+    clip.addEventListener('loadedmetadata', slow);
+    clip.addEventListener('play', slow);
+    clip.play().catch(() => {});
+  }
   if (opts.names) [NAME_A, NAME_B] = opts.names;
   buildAfter();
   buildSubs();
