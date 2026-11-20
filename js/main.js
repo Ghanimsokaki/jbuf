@@ -295,6 +295,8 @@ const state = {
   busy: true, started: false, ended: false,
   last: null, // crush talked to most recently
 };
+/** a girl says yes at the confession with at least WIN points (two full hearts) */
+const WIN = 4, MAX_AFF = 6;
 const isFinal = () => state.day === LAST_DAY && state.clock >= PROM;
 const afterSchool = () => state.clock >= SCHOOL_OUT;
 
@@ -359,6 +361,16 @@ function placeFriends() {
 const TOWN_SPOT = { ana: 4640, rania: 4820, alya: 5560, kirana: 5960, sekar: 6290, nayla: 6560, putri: 7000, thisa: 8460, nadia: 9700, renata: 10420 };
 const HOTEL_BALCONY = 7460;
 const crushX = (c) => (isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : c.id === 'mira' ? miraX : afterSchool() ? TOWN_SPOT[c.id] : c.x);
+async function addAff(c, n) {
+  const before = state.aff[c.id];
+  state.aff[c.id] = Math.min(MAX_AFF, before + n);
+  updateHud();
+  if (before < WIN && state.aff[c.id] >= WIN && !c.secret) {
+    await wait(900);
+    await say('', `💌 ${c.name} likes you enough to say yes! On Sunday at 18:00 she’ll be waiting on the hotel balcony (Grand Bintang Hotel). Don’t be late.`);
+    closeDialog();
+  }
+}
 function topCrush() {
   let best = null;
   for (const c of Object.values(CRUSHES)) {
@@ -852,13 +864,15 @@ function updateCars(dt) {
 let road = null; // { c, x, carX, t, done }
 let roadDay = -1;
 function maybeStartRoadEvent(dt) {
-  if (road || roadDay === state.day || !afterSchool() || state.busy || state.ended || state.x < 4300 || state.x > BEACH) return;
+  if (road || roadDay === state.day || !afterSchool() || state.day === LAST_DAY || state.busy || state.ended || state.x < 4300 || state.x > BEACH) return;
   // usually within ten seconds of reaching town, and for sure by 17:30
   if (Math.random() > dt / 10 && state.clock < 17.5) return;
   const pool = Object.values(CRUSHES).filter((c) => !c.secret && Math.abs(crushX(c) - state.x) > 300);
-  const c = pool[Math.floor(Math.random() * pool.length)];
+  startRoadEvent(pool[Math.floor(Math.random() * pool.length)]);
+}
+function startRoadEvent(c) {
   roadDay = state.day;
-  road = { c, x: state.x + 240 * state.face, carX: state.x + 240 * state.face + 1100, t: 0, done: false };
+  road = { c, x: state.x + 240 * state.face, carX: state.x + 240 * state.face + 1300, t: 0, done: false };
   state.busy = true;
   stage.right = null;
   $('save-btn').hidden = false;
@@ -869,7 +883,7 @@ function drawRoadEvent(dt, t) {
   if (!road) return;
   road.t += dt;
   const slow = road.saved ? 0.2 : 1;
-  if (!road.done) road.carX -= 700 * dt * slow;
+  if (!road.done) road.carX -= 400 * dt * slow;
   // the girl looking at her phone in the middle of the road
   const gx = road.saved ? road.x - 20 : road.x;
   walker(road.c.name, { x: sx(gx), y: sy(road.saved ? 0 : -50), k: S, face: 1, look: road.c.look, t, phase: 0, moving: false, seed: 9 });
@@ -899,11 +913,12 @@ async function finishRoad(saved) {
     await say('', `${me} dives into the road and pulls ${c.name} back onto the pavement. The car roars past, inches away.`);
     await say(c.name, `W-what… ${me}? You… you just saved my life?!`, 'surprised', 'shock');
     await say(c.name, '…My heart is beating so fast. I don’t think it’s only because of the car.', 'blush', 'heart');
-    state.aff[c.id] += 3;
     state.last = c.id;
     toast(`HERO! ${c.name} ♥ +3`);
     song.pickup();
     fx.burst(sx(state.x), sy(110), reduced ? 8 : 20);
+    closeDialog();
+    await addAff(c, 3);
   } else {
     await say('', `SCREEEECH! The car brakes hard and stops just in front of ${c.name}. The driver honks. She jumps back to the pavement, shaking.`);
     await say(c.name, '…That was way too close. I need to stop texting while walking.', 'sad', 'sweat');
@@ -920,7 +935,7 @@ window.addEventListener('keydown', (e) => { if (road && !road.done && e.key.toLo
 /* ------------------------------------------------------ the crazy crush */
 let miraX = -9999;
 function updateMira(dt) {
-  if (state.day < 2 || !state.me) { miraX = -9999; return; }
+  if (state.day < 2 || !state.me || (isFinal() && topCrush()?.id !== 'mira')) { miraX = -9999; return; }
   // she is always just a little behind you. always.
   const target = state.x - 170 * state.face;
   if (miraX < -1000) miraX = target - 400 * state.face;
@@ -1212,8 +1227,12 @@ function interactables() {
 }
 function findNear() {
   let best = null, bd = 80;
+  const top = isFinal() ? topCrush()?.id : null;
   for (const n of interactables()) {
-    const d = Math.abs(n.x - state.x);
+    let d = Math.abs(n.x - state.x);
+    // the girl you came to see wins over whoever is standing next to her
+    if (n.kind === 'crush' && n.id === top) d = d < 130 ? 0 : d;
+    else if (n.kind === 'crush' && sceneReady(n.who)) d -= 25;
     if (d < bd) { bd = d; best = n; }
   }
   return best;
@@ -1244,7 +1263,7 @@ function heartMark(x, t) {
   ctx.stroke(); ctx.fill();
   ctx.restore();
 }
-const sceneReady = (c) => state.scene[c.id] < 3 && state.seenDay[c.id] !== state.day;
+const sceneReady = (c) => state.seenDay[c.id] !== state.day;
 
 /* ------------------------------------------------------------- dialogue */
 const dlg = $('dialog');
@@ -1385,11 +1404,22 @@ function updateHud() {
   $('zone').textContent = zoneAt(state.x);
   const ul = $('hearts');
   ul.innerHTML = '';
+  const top = topCrush();
+  const ready = top && state.aff[top.id] >= WIN;
+  $('goal').textContent = isFinal() && top
+    ? `💌 Go to the hotel balcony → confess to ${top.name}!`
+    : ready
+      ? `💌 ${top.name} would say yes · Sunday 18:00, hotel balcony`
+      : state.day === LAST_DAY
+        ? 'Last day! Get ♥♥ with someone before 18:00'
+        : 'Goal: ♥♥ with one girl by Sunday 18:00';
   for (const c of Object.values(CRUSHES)) {
     if (!state.met.has(c.id)) continue;
-    const full = Math.floor(state.aff[c.id] / 2), half = state.aff[c.id] % 2;
+    const a = Math.min(MAX_AFF, state.aff[c.id]);
+    const full = Math.floor(a / 2), half = a % 2;
     const li = document.createElement('li');
-    li.innerHTML = `${c.name} <span class="h">${'♥'.repeat(full)}${half ? '♡' : ''}<i>${'♡'.repeat(3 - full - half)}</i></span>`;
+    if (a >= WIN) li.className = 'ready';
+    li.innerHTML = `${c.name} <span class="h">${'♥'.repeat(full)}${half ? '♡' : ''}<i>${'♡'.repeat(Math.max(0, 3 - full - half))}</i></span>${a >= WIN ? ' 💌' : ''}`;
     li.setAttribute('aria-label', `${c.name}: ${state.aff[c.id]} of 6`);
     ul.append(li);
   }
@@ -1464,6 +1494,18 @@ async function talkCrush(c) {
     await say(c.name, '…Shouldn’t you be somewhere right now?');
     return false;
   }
+  if (state.scene[c.id] >= 3 && state.seenDay[c.id] !== state.day) {
+    // after her three moments you can still hang out once a day
+    const [line, ex] = CHAT[c.id][afterSchool() ? 1 : 0];
+    await say(c.name, line, ex);
+    await say('', `You spend a while together with ${c.name}. Time flies.`);
+    state.seenDay[c.id] = state.day;
+    state.last = c.id;
+    toast(`Hanging out · ${c.name} ♥ +1`);
+    closeDialog();
+    await addAff(c, 1);
+    return true;
+  }
   if (state.scene[c.id] >= 3 || state.seenDay[c.id] === state.day) {
     // you can always talk; a new scene waits for tomorrow
     const [line, ex] = CHAT[c.id][afterSchool() ? 1 : 0];
@@ -1477,11 +1519,11 @@ async function talkCrush(c) {
   const gain = await SCENES[c.id][state.scene[c.id]](c, state.me.name);
   state.scene[c.id]++;
   state.seenDay[c.id] = state.day;
-  state.aff[c.id] += gain;
   if (gain === 2) { toast(`${c.name} ♥ +2`); song.pickup(); fx.burst(sx(c.x), sy(120), reduced ? 6 : 14); }
   else if (gain === 1) toast(`${c.name} ♥ +1`);
   else toast(`${c.name} …`);
-  updateHud();
+  closeDialog();
+  await addAff(c, gain);
   await wait(800);
   return true;
 }
@@ -1992,7 +2034,7 @@ async function confession(c) {
   await say(c.name, `${me}. Your friends said you wanted to tell me something. …Then they ran away.`, 'blush', 'sweat');
   const mine = state.me.end;
   const i = await choose([mine.option, 'I like you. I have for a while.', '(Say nothing. Just hold out your hand.)']);
-  if (state.aff[c.id] < 4) {
+  if (state.aff[c.id] < WIN) {
     await say(c.name, `${me}… you’re really sweet. But I feel like I’ve only just met you.`, 'sad');
     await say(c.name, 'Text me in college? Let’s see what happens.', 'blush');
     closeDialog();
@@ -2038,6 +2080,9 @@ async function baksoEnd(c) {
   $('res-sub').textContent = c
     ? `${c.name} wants to get to know you first. That’s not a no! But a pact is a pact. ${state.me.end.bakso}`
     : `No crush before college… ${state.me.end.bakso}`;
+  const had = c ? Math.min(MAX_AFF, state.aff[c.id]) : 0;
+  $('res-tip').textContent = `How to win: a girl says yes with ♥♥ (4 points). ${c ? `${c.name} was at ${had} of 4.` : 'You didn’t get close to anyone.'} Pick the answers that make her light up (+2), talk to her every day (one new moment a day, then you can hang out for +1), and save her on the road for +3.`;
+  $('res-tip').hidden = false;
   results(null);
   document.body.classList.add('show-results');
   $('results').hidden = false;
@@ -2287,15 +2332,14 @@ async function pick(f) {
   await say(other('Hamzah', 'Qai'), '…treats the whole squad to bakso. Extra meatballs.', 'smug');
   await say(other('Lindan', 'Nizam'), `${me}, you go first. Don’t make us eat for free. …Actually, do.`);
   await say(me, '…Why does this feel like a trap?', 'annoyed', 'sweat');
-  await say('', 'Each day lasts nine minutes, from 07:00 to 21:00. Talk to anyone, anytime: a ♥ means a girl has a new moment for you today. After 15:00 everyone heads into town. Sunday night is prom — that’s when you confess.');
+  await say('', 'Each day lasts nine minutes, from 07:00 to 21:00. Talk to anyone, anytime: a ♥ over a girl means she has time for you today. After 15:00 everyone heads into town.');
+  await say('', 'HOW TO WIN: get ♥♥ (4 points) with one girl — her best answers give +2. On Sunday at 18:00 she waits on the hotel balcony. Confess there. Fewer than ♥♥ = bakso for everyone.');
   closeDialog();
   placeFriends();
   state.busy = false;
 }
 
-$('start').addEventListener('click', (e) => {
-  e.currentTarget.blur();
-  $('intro').classList.add('gone');
+function startMusic() {
   $('sound').hidden = false;
   song.start();
   track.play().then(() => fadeTrack(0.65)).catch(() => {
@@ -2304,8 +2348,89 @@ $('start').addEventListener('click', (e) => {
     song.ctx = null;
     song.start();
   });
+}
+$('start').addEventListener('click', (e) => {
+  e.currentTarget.blur();
+  $('intro').classList.add('gone');
+  startMusic();
   opening().then(() => { $('select').hidden = false; showcase = null; });
 });
+
+/* --------------------------------------------- test scenes (title screen) */
+function buildTest() {
+  const me = $('t-me'), cr = $('t-crush');
+  for (const f of FRIENDS) me.add(new Option(f.name, f.name));
+  for (const c of Object.values(CRUSHES)) cr.add(new Option(c.secret ? `${c.name} (secret)` : c.name, c.id));
+  $('test-open').addEventListener('click', () => { $('test').hidden = false; });
+  $('test-close').addEventListener('click', () => { $('test').hidden = true; });
+  for (const b of $('test').querySelectorAll('[data-t]')) b.addEventListener('click', () => testRun(b.dataset.t));
+}
+async function testRun(mode) {
+  const f = FRIENDS.find((x) => x.name === $('t-me').value);
+  const c = CRUSHES[$('t-crush').value];
+  $('test').hidden = true;
+  $('intro').classList.add('gone');
+  startMusic();
+  showcase = null;
+  state.me = f;
+  state.started = true;
+  state.busy = true;
+  $('hud').hidden = false;
+  $('skip').hidden = false;
+  if (touch) $('pad').hidden = false;
+  state.met.add(c.id);
+  state.last = c.id;
+  const at = (day, clock, x) => {
+    state.day = day; state.clock = clock; lastHour = Math.floor(clock);
+    state.x = clamp(x, 60, WORLD - 60); state.face = 1;
+    camX = clamp(state.x - viewW() * 0.42, 0, WORLD - viewW());
+    placeFriends();
+    updateHud();
+  };
+  const girl = c.secret ? CRUSHES.ana : c; // Mira never needs saving
+  if (mode === 'roam') { at(0, DAY_START, 400); toast('Test · free roam, Monday morning'); }
+  else if (mode === 'town') { at(c.secret ? 2 : 1, SCHOOL_OUT + 0.1, (TOWN_SPOT[c.id] || 4700) - 160); toast('Test · after school in town'); }
+  else if (mode === 'scene') {
+    at(c.secret ? 2 : 1, 9, (c.secret ? 400 : c.x) - 140);
+    await introCard(c);
+    for (let n = 0; n < 3; n++) {
+      const gain = await SCENES[c.id][n](c, f.name);
+      toast(`${c.name} ${gain ? `♥ +${gain}` : '…'}`);
+      closeDialog();
+      await addAff(c, gain);
+      await wait(1100);
+    }
+    state.scene[c.id] = 3;
+    state.seenDay[c.id] = state.day;
+  } else if (mode === 'road') {
+    state.met.add(girl.id);
+    at(1, 16, 8700);
+    await wait(700);
+    startRoadEvent(girl);
+    return;
+  } else if (mode === 'prom') {
+    state.aff[c.id] = MAX_AFF;
+    at(LAST_DAY, PROM + 0.02, HOTEL_BALCONY - 120);
+    await finalAfternoon();
+  } else if (mode === 'happy') {
+    state.aff[c.id] = MAX_AFF;
+    at(LAST_DAY, PROM + 0.5, HOTEL_BALCONY);
+    if (c.secret) await crazyEnd(c); else happyEnd(c);
+    return;
+  } else if (mode === 'bakso') {
+    at(LAST_DAY, DAY_END - 0.01, HOTEL_BALCONY);
+    await baksoEnd(c.secret ? null : c);
+    return;
+  } else if (mode === 'yandere') {
+    state.met.add('mira');
+    at(LAST_DAY, PROM + 0.5, HOTEL_BALCONY);
+    await crazyEnd(CRUSHES.mira);
+    return;
+  }
+  closeDialog();
+  updateHud();
+  state.busy = false;
+}
 
 const soundBtn = $('sound');
 soundBtn.addEventListener('click', () => {
@@ -2322,4 +2447,5 @@ window.addEventListener('resize', resize);
 resize();
 for (const n of [...FRIENDS.map((f) => f.name), ...Object.values(CRUSHES).map((c) => c.name)]) { artFor(n); spriteFor(n); frameFor(n, 'walk'); frameFor(n, 'run'); }
 buildRoster();
+buildTest();
 requestAnimationFrame(frame);

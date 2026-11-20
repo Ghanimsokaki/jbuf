@@ -762,3 +762,26 @@ body.credits-on .title-card, body.credits-on .sub, body.credits-on .tap-hint { v
 body.crazy .results { background: radial-gradient(70% 55% at 50% 40%, rgba(90, 10, 40, 0.9), rgba(10, 0, 10, 0.97)); }
 body.crazy .logo { -webkit-text-stroke-color: #a0103a; }
 .crazy-cg { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.28; z-index: -1; filter: saturate(1.3) hue-rotate(-10deg); }
+
+/* ---------- how to win + goal ---------- */
+.intro .howto { margin: 1rem auto 0; max-width: 34em; font-size: 0.95rem; line-height: 1.5; color: #fff; background: rgba(20, 10, 50, 0.45); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 14px; padding: 0.6em 1em; }
+.hud .goal { padding: 0.3em 0.8em; border-radius: 999px; background: rgba(232, 65, 122, 0.92); color: #fff; font-weight: 800; font-size: 0.78rem; box-shadow: 0 2px 10px rgba(60, 10, 50, 0.35); }
+.hud .goal:empty { display: none; }
+.hearts li.ready { outline: 2px solid #ffd36a; box-shadow: 0 0 12px rgba(255, 211, 106, 0.6); }
+.res-tip { margin: 0.4rem auto 1rem; max-width: 34em; padding: 0.7em 1em; border-radius: 14px; background: rgba(255, 211, 106, 0.16); border: 1px solid rgba(255, 211, 106, 0.5); font-size: 0.9rem; line-height: 1.5; }
+.res-tip[hidden] { display: none; }
+
+/* ---------- test scenes ---------- */
+.ghost-btn { margin: 0.9rem auto 0; display: block; padding: 0.5em 1.3em; border-radius: 999px; border: 2px solid rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.12); color: #fff; font-family: var(--font); font-weight: 800; font-size: 0.9rem; cursor: pointer; }
+.ghost-btn:hover { background: rgba(255, 255, 255, 0.25); }
+.ghost-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.test { z-index: 8; }
+.test-inner { max-width: 760px; }
+.test-pick { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 1.2rem; }
+.test-pick label { display: flex; align-items: center; gap: 0.5em; font-weight: 800; }
+.test-pick select { font-family: var(--font); font-weight: 700; font-size: 1rem; padding: 0.4em 0.7em; border-radius: 10px; border: 2px solid #fff; background: #fff; color: #3a2a50; }
+.test-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.test-grid button { display: flex; flex-direction: column; gap: 0.25em; padding: 0.9em 0.8em; border-radius: 16px; border: 2px solid rgba(255, 255, 255, 0.7); background: rgba(255, 255, 255, 0.14); color: #fff; font-family: var(--font); cursor: pointer; transition: transform 0.15s, background 0.15s; }
+.test-grid button:hover { transform: translateY(-2px); background: rgba(255, 122, 168, 0.45); }
+.test-grid button b { font-size: 1rem; }
+.test-grid button small { font-size: 0.75rem; opacity: 0.85; }

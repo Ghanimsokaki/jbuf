@@ -25,6 +25,7 @@
   <div id="hud" class="hud" hidden>
     <p id="quest" class="quest"></p>
     <p id="zone" class="zone"></p>
+    <p id="goal" class="goal"></p>
     <ul id="hearts" class="hearts" aria-label="Crush meter"></ul>
   </div>
   <div id="toast" class="toast" role="status"></div>
@@ -94,6 +95,7 @@
       <p class="kana" id="res-kana"></p>
       <h2 class="logo small" id="res-title"></h2>
       <p class="res-sub" id="res-sub"></p>
+      <p class="res-tip" id="res-tip" hidden></p>
       <h3>The pact results</h3>
       <ul id="res-list"></ul>
       <button id="again" class="start" type="button">Play again</button>
@@ -110,6 +112,8 @@
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
         Start
       </button>
+      <p class="howto">💌 <b>How to win:</b> get <b>♥♥</b> with one girl, then confess to her on <b>Sunday 18:00</b> on the hotel balcony.</p>
+      <button id="test-open" class="ghost-btn" type="button">🎬 Test scenes</button>
       <p class="keys"><kbd>←</kbd><kbd>→</kbd> walk &nbsp;·&nbsp; hold <kbd>Shift</kbd> to run &nbsp;·&nbsp; <kbd>E</kbd> / <kbd>Space</kbd> talk &nbsp;·&nbsp; <kbd>F</kbd> save &nbsp;·&nbsp; <kbd>1</kbd>–<kbd>3</kbd> answer</p>
     </div>
   </section>
@@ -120,6 +124,29 @@
       <p class="kana">キャラクター選択</p>
       <h2 class="select-title">Who are you?</h2>
       <div id="roster" class="roster"></div>
+    </div>
+  </section>
+
+  <!-- test scenes: jump straight to any part of the game -->
+  <section id="test" class="select test" hidden>
+    <div class="select-inner test-inner">
+      <p class="kana">テストモード</p>
+      <h2 class="select-title">Test scenes</h2>
+      <div class="test-pick">
+        <label>Play as <select id="t-me"></select></label>
+        <label>Crush <select id="t-crush"></select></label>
+      </div>
+      <div class="test-grid">
+        <button type="button" data-t="roam"><b>Free roam</b><small>Monday morning, school</small></button>
+        <button type="button" data-t="town"><b>After school</b><small>in town, next to her</small></button>
+        <button type="button" data-t="scene"><b>Her 3 moments</b><small>all her scenes in a row</small></button>
+        <button type="button" data-t="road"><b>Road rescue</b><small>press F / the red button</small></button>
+        <button type="button" data-t="prom"><b>Prom night</b><small>full ♥, walk to the balcony</small></button>
+        <button type="button" data-t="happy"><b>Happy ending</b><small>the anime finale</small></button>
+        <button type="button" data-t="bakso"><b>Bakso ending</b><small>when it goes wrong</small></button>
+        <button type="button" data-t="yandere"><b>Yandere ending</b><small>Mira’s secret ending</small></button>
+      </div>
+      <button id="test-close" class="ghost-btn" type="button">← Back</button>
     </div>
   </section>
 
