@@ -13,6 +13,7 @@
 import { LoveSong } from './audio.js';
 import { HeartFx } from './fx.js';
 import { startEnding } from './ending.js';
+import { battle } from './battle.js';
 import { drawPortrait, drawCharacter } from './portrait.js';
 
 /* real illustrated art: art/<name>.webp, a cut-out bust for every character */
@@ -296,6 +297,7 @@ const state = {
   last: null, // crush talked to most recently
   room: null, // which building you are inside, if any
   gift: null, giftDay: -1,
+  soul: {}, asked: new Set(), bullyDone: false,
 };
 /** a girl says yes at the confession with at least WIN points (two full hearts) */
 const WIN = 4, MAX_AFF = 6;
@@ -1118,6 +1120,7 @@ async function finishRoad(saved) {
     await say(c.name, '…My heart is beating so fast. I don’t think it’s only because of the car.', 'blush', 'heart');
     state.last = c.id;
     toast(`HERO! ${c.name} ♥ +3`);
+    addSoul('bravery', 2);
     song.pickup();
     fx.burst(sx(state.x), sy(110), reduced ? 8 : 20);
     closeDialog();
@@ -1494,6 +1497,7 @@ const porL = $('por-left'), porR = $('por-right');
 const stage = { right: null, speaker: null, ex: {}, fx: null };
 function lookOf(name) {
   if (name === state.me?.name) return state.me.look;
+  if (name === 'Bagas') return BAGAS_LOOK;
   return (FRIENDS.find((f) => f.name === name) || Object.values(CRUSHES).find((c) => c.name === name))?.look;
 }
 function paintPortrait(cv, name, t) {
@@ -1708,12 +1712,92 @@ const CHAT = {
   sekar: [['…Hi. I’m drawing the window light.', 'blush'], ['Hold still. You’re in my picture now.', 'smug']],
 };
 
+/* ---------------------------------------------- your SOUL, and the questions */
+const SOULS = {
+  determination: { name: 'DETERMINATION', col: '#ff2a3a', text: 'You never give up — not on the pact, and not on her.' },
+  bravery: { name: 'BRAVERY', col: '#ff8a1a', text: 'You face scary things head-on: bullies, cars, confessions.' },
+  justice: { name: 'JUSTICE', col: '#ffd21a', text: 'You stand up for what is right, even when it is hard.' },
+  kindness: { name: 'KINDNESS', col: '#2fd05a', text: 'You make everyone around you feel safe and seen.' },
+  patience: { name: 'PATIENCE', col: '#38d8f0', text: 'You wait for the right moment — and it always comes.' },
+  integrity: { name: 'INTEGRITY', col: '#3a6aff', text: 'You are honest, even when a lie would be easier.' },
+  perseverance: { name: 'PERSEVERANCE', col: '#b04aff', text: 'You keep going. Laps, homework, bakso: you finish everything.' },
+};
+function addSoul(trait, n = 1) { state.soul[trait] = (state.soul[trait] || 0) + n; }
+function topSoul() {
+  let best = 'determination', v = 0;
+  for (const [k, n] of Object.entries(state.soul)) if (n > v) { best = k; v = n; }
+  return best;
+}
+/** two a day, asked by a friend: [question, [answer, soul, reply] x3] */
+const QUESTIONS = [
+  ['You find 100k rupiah on the canteen floor. What do you do?', [['Hand it in to the teacher’s office.', 'integrity', 'A saint. An actual saint.'], ['Buy bakso for the whole squad!', 'kindness', 'Okay, now I’m hungry.'], ['Wait and see if someone comes back for it.', 'patience', 'Very patient. Very you.']]],
+  ['A senior is picking on a grade-10 kid. You…', [['Step in. Right now.', 'bravery', 'Whoa. Remind me never to fight you.'], ['Go get a teacher.', 'justice', 'Smart. Rules are rules.'], ['Check the kid is okay afterwards.', 'kindness', 'That’s actually really sweet.']]],
+  ['Big exam tomorrow and you understand NOTHING.', [['Study all night. I will not lose.', 'determination', 'Bring snacks. Lots of snacks.'], ['A little bit at a time, every hour.', 'perseverance', 'Slow and steady, huh?'], ['Tell the teacher honestly and ask for help.', 'integrity', 'Brave AND honest. Respect.']]],
+  ['Your crush shows you her drawing. It’s… not great. You say…', [['The truth, but gently.', 'integrity', 'Risky. But she’ll trust you.'], ['I love it, because she made it.', 'kindness', 'Okay that was smooth.'], ['“Teach me to draw too?”', 'patience', 'Ooh, a date disguised as a lesson.']]],
+  ['The squad dares you to sing on the rooftop. Alone.', [['Give me the mic. NOW.', 'bravery', 'LEGEND.'], ['Only if everyone sings too.', 'justice', 'Fair is fair, I guess.'], ['Practise first, then do it perfectly.', 'perseverance', 'Tomorrow, then. We’re watching.']]],
+  ['You missed the bus. The next one is in an hour.', [['Run to school. All the way.', 'determination', 'You are insane. I love it.'], ['Wait and read a book.', 'patience', 'Peaceful. Suspiciously peaceful.'], ['Share an ojek with a classmate.', 'kindness', 'Carpool king.']]],
+  ['Someone copies your homework and gets a better grade.', [['Tell the teacher what happened.', 'justice', 'Justice has been served.'], ['Let it go. Karma’s coming.', 'patience', 'Zen mode activated.'], ['Next time I’ll do even better.', 'determination', 'That’s the spirit!']]],
+  ['Your best friend likes the same girl as you. What now?', [['Talk to him about it honestly.', 'integrity', 'Mature. Weirdly mature.'], ['Let her choose. No drama.', 'justice', 'Fair play.'], ['Step back. Friends first.', 'kindness', 'Bro… I’m tearing up.']]],
+  ['Hamzah offers you his LAST cheese bakso.', [['Split it half and half.', 'justice', 'Perfectly balanced.'], ['No way, it’s yours.', 'kindness', 'Hamzah will remember this.'], ['Accept, and buy him two tomorrow.', 'integrity', 'A man of his word.']]],
+  ['Losing a football match 3–0 at half-time. Your team talk?', [['We can STILL win this!', 'determination', 'Goosebumps.'], ['One goal at a time. Keep going.', 'perseverance', 'Coach material.'], ['Cheer everyone up first.', 'kindness', 'The team needed that.']]],
+  ['A stray kitten follows you home in the rain.', [['Take it home and dry it off.', 'kindness', 'Name it after me. Please.'], ['Find its owner, whatever it takes.', 'perseverance', 'Detective mode.'], ['Ask my parents first.', 'integrity', 'Responsible. Boring. Correct.']]],
+  ['The teacher blames the whole class for something YOU did.', [['Raise my hand and admit it.', 'integrity', 'That takes guts.'], ['Admit it, and say sorry to everyone.', 'justice', 'Respect, honestly.'], ['Take everyone’s punishment myself.', 'bravery', 'Hero of class 12-A!']]],
+  ['You get lost in the haunted house at the night market.', [['Walk deeper in. Ghosts fear ME.', 'bravery', 'The ghosts are scared of you now.'], ['Stay calm and find the exit slowly.', 'patience', 'Calm under pressure.'], ['Keep going until I find my friends.', 'perseverance', 'You’d never leave anyone behind.']]],
+  ['Last question! Why do you want a crush before college?', [['Because I never give up on a pact.', 'determination', 'A promise is a promise!'], ['Because I want to make someone happy.', 'kindness', 'Aww. Go get her.'], ['Because I want to be honest about my feelings.', 'integrity', 'Then tell her tonight.']]],
+];
+async function questionTime(n) {
+  const [text, answers] = QUESTIONS[n];
+  const asker = FRIENDS.filter((f) => f !== state.me)[n % (FRIENDS.length - 1)].name;
+  await say(asker, `QUESTION TIME! ${text}`, 'happy', 'sparkle');
+  const i = await choose(answers.map((a) => a[0]));
+  await say(asker, answers[i][2], 'happy');
+  addSoul(answers[i][1]);
+  toast(`♥ ${SOULS[answers[i][1]].name} +1`);
+  closeDialog();
+}
+
+/* ------------------------------------------------- the bully, Bagas */
+const BAGAS_LOOK = look({ hair: '#1a1416', hairHi: '#3a2c2c', style: 'messy', top: '#c8303a', topSh: '#a02028', tie: '#7a2a3a', skin: '#d9a07a' });
+async function bullyEvent(c) {
+  const me = state.me.name;
+  state.bullyDone = true;
+  await say('', `Before you can say hi to ${c.name}, a tall boy in a red varsity jacket shoves past you.`);
+  await say('Bagas', `Oi. ${c.name}’s going to prom with ME. Right, ${c.name}?`, 'smug');
+  await say(c.name, '…I never said that.', 'annoyed', 'sweat');
+  await say('Bagas', `See? She’s shy. Now get lost, ${me}. Unless you want to fight about it.`, 'smug', 'anger');
+  const i = await choose(['…Fine. Let’s settle this.', `${c.name} can decide for herself.`, '(Step between them.)']);
+  addSoul(['bravery', 'justice', 'integrity'][i]);
+  await say(me, i === 1 ? `She can decide for herself, Bagas. And I’m not going anywhere.` : 'Bring it.', 'annoyed', 'shock');
+  closeDialog();
+  const musicOn = soundBtn.getAttribute('aria-pressed') === 'true';
+  fadeTrack(0, 600);
+  const out = await battle({ me, crush: c.name, portrait: './art/bagas.webp', muted: !musicOn, onTrait: (t) => addSoul(t) });
+  if (soundBtn.getAttribute('aria-pressed') === 'true') fadeTrack(0.65, 1800);
+  state.last = c.id;
+  if (out === 'spared') {
+    await say(c.name, `You didn’t even need to be mean to him. That was… really cool, ${me}.`, 'blush', 'heart');
+    toast(`♥ ${c.name} +2 · you spared Bagas`);
+    closeDialog();
+    await addAff(c, 2);
+  } else if (out === 'won') {
+    await say(c.name, `${me}! You actually stood up to him! My hero!`, 'happy', 'heart');
+    toast(`♥ ${c.name} +2 · Bagas ran away`);
+    closeDialog();
+    await addAff(c, 2);
+  } else {
+    await say(c.name, '…It’s okay. Bagas is a jerk anyway. Thanks for trying.', 'sad');
+    closeDialog();
+  }
+}
+
 async function talkCrush(c) {
   if (isFinal()) {
     if (c.id === topCrush()?.id) { await confession(c); return false; }
     await say(c.name, '…Shouldn’t you be somewhere right now?');
     return false;
   }
+  // from Thursday, the class bully shows up when you visit the girl you like most
+  if (!state.bullyDone && state.day >= 3 && afterSchool() && !c.secret && c.id === topCrush()?.id && state.aff[c.id] >= 1) { await bullyEvent(c); return true; }
   if (state.gift) {
     if (!state.met.has(c.id)) { await introCard(c); state.met.add(c.id); }
     const g = state.gift;
@@ -1722,6 +1806,7 @@ async function talkCrush(c) {
     await say(c.name, c.id === 'mira' ? 'A present?! I’ll keep it forever. FOREVER. ♡' : `For me? …${state.me.name}, you remembered I like this?`, 'blush', 'heart');
     state.last = c.id;
     toast(`🎁 ${c.name} ♥ +1`);
+    addSoul('kindness');
     closeDialog();
     await addAff(c, 1);
     return true;
@@ -1734,6 +1819,7 @@ async function talkCrush(c) {
     state.seenDay[c.id] = state.day;
     state.last = c.id;
     toast(`Hanging out · ${c.name} ♥ +1`);
+    addSoul('patience');
     closeDialog();
     await addAff(c, 1);
     return true;
@@ -2213,6 +2299,16 @@ async function tickClock(dt) {
   if (!state.started || state.ended || state.busy || !state.me) return;
   const before = state.clock;
   state.clock += dt / SECONDS_PER_HOUR;
+  // question time: once in the morning, once after school
+  const slot = state.clock >= 16.25 ? 1 : state.clock >= 8.5 ? 0 : -1;
+  const qn = state.day * 2 + slot;
+  if (slot >= 0 && qn < QUESTIONS.length && !state.asked.has(qn) && !road && !isFinal()) {
+    state.asked.add(qn);
+    state.busy = true;
+    await questionTime(qn);
+    if (!state.ended) state.busy = false;
+    return;
+  }
   if (before < SCHOOL_OUT && state.clock >= SCHOOL_OUT) {
     placeFriends();
     toast('🔔 School’s out! Everyone heads into town.');
@@ -2283,7 +2379,16 @@ async function confession(c) {
   happyEnd(c);
 }
 
+function showSoul() {
+  const k = topSoul(), S = SOULS[k];
+  const el = $('res-soul');
+  const chips = Object.entries(state.soul).sort((a, b) => b[1] - a[1]).map(([t, n]) => `<span style="--c:${SOULS[t].col}">${SOULS[t].name} ${n}</span>`).join('');
+  el.innerHTML = `<svg viewBox="0 0 24 24" width="54" height="54" aria-hidden="true"><path d="M12 21S2 14 2 8a5 5 0 0 1 10-1 5 5 0 0 1 10 1c0 6-10 13-10 13Z" fill="${S.col}"/></svg>
+    <div><p class="soul-k">YOUR SOUL</p><h3 style="color:${S.col}">${S.name}</h3><p>${S.text}</p>${chips ? `<p class="soul-chips">${chips}</p>` : ''}</div>`;
+  el.hidden = false;
+}
 function results(winner) {
+  showSoul();
   const r = seeded(CRUSH_IDS.reduce((a, id, k) => a + state.aff[id] * (k + 3), 0) + state.me.name.length);
   const ul = $('res-list');
   ul.innerHTML = '';
@@ -2323,7 +2428,7 @@ async function baksoEnd(c) {
 }
 
 /** the endings Dreamina has animated so far (the others use the still picture) */
-const ENDING_CLIPS = new Set(['ana', 'putri', 'alya', 'rania', 'kirana', 'nayla', 'sekar', 'nadia']);
+const ENDING_CLIPS = new Set(['ana', 'putri', 'alya', 'rania', 'kirana', 'nayla', 'sekar', 'nadia', 'thisa', 'renata']);
 function happyEnd(c) {
   closeDialog();
   state.ended = true;
@@ -2645,6 +2750,19 @@ async function testRun(mode) {
     if (INSIDE_SPOT[c.id]) at(1, SCHOOL_OUT + 0.1, insideX(c.id) - 260, INSIDE_SPOT[c.id][0]);
     else at(c.secret ? 2 : 1, SCHOOL_OUT + 0.1, (TOWN_SPOT[c.id] || 4700) - 160);
     toast(INSIDE_SPOT[c.id] ? `Test · inside ${ROOMS[INSIDE_SPOT[c.id][0]].label}` : 'Test · after school in town');
+  }
+  else if (mode === 'bully') {
+    const girl = c.secret ? CRUSHES.ana : c;
+    state.met.add(girl.id); state.aff[girl.id] = 2; state.last = girl.id;
+    at(3, SCHOOL_OUT + 0.3, crushX(girl) - 120, INSIDE_SPOT[girl.id]?.[0] || null);
+    state.asked = new Set(QUESTIONS.map((_, i) => i)); // no questions during the test
+    await bullyEvent(girl);
+  }
+  else if (mode === 'quiz') {
+    at(0, 8.4, 400);
+    for (let n = 0; n < 4; n++) { await questionTime(n); await wait(400); }
+    state.asked = new Set([0, 1, 2, 3]);
+    toast(`Your SOUL so far: ${SOULS[topSoul()].name}`);
   }
   else if (mode === 'inside') { at(1, SCHOOL_OUT + 0.5, ROOMS.cafe.door - 300); roadDay = state.day; toast('Test · walk right to the café door, press ↑ or E'); }
   else if (mode === 'scene') {
