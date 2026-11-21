@@ -298,6 +298,7 @@ const state = {
   room: null, // which building you are inside, if any
   gift: null, giftDay: -1,
   soul: {}, asked: new Set(), bullyDone: false,
+  missing: null, // the girl Bagas took behind the school
 };
 /** a girl says yes at the confession with at least WIN points (two full hearts) */
 const WIN = 4, MAX_AFF = 6;
@@ -364,7 +365,7 @@ function placeFriends() {
 }
 const TOWN_SPOT = { ana: 4640, rania: 4820, alya: 5560, kirana: 5960, sekar: 6290, nayla: 6560, putri: 7000, thisa: 8460, nadia: 9700, renata: 10420 };
 const HOTEL_BALCONY = 7460;
-const crushX = (c) => (isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : c.id === 'mira' ? miraX : afterSchool() ? (INSIDE_SPOT[c.id] ? insideX(c.id) : TOWN_SPOT[c.id]) : c.x);
+const crushX = (c) => (state.missing === c.id ? ROOMS.back.x0 + 880 : isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : c.id === 'mira' ? miraX : afterSchool() ? (INSIDE_SPOT[c.id] ? insideX(c.id) : TOWN_SPOT[c.id]) : c.x);
 async function addAff(c, n) {
   const before = state.aff[c.id];
   state.aff[c.id] = Math.min(MAX_AFF, before + n);
@@ -611,6 +612,11 @@ function drawCourtyardAndRoof(q, t) {
   ctx.stroke();
   ctx.lineWidth = 4 * S;
   ctx.beginPath(); ctx.moveTo(sx(3480), sy(100)); ctx.lineTo(sx(3910), sy(100)); ctx.stroke();
+  // the path round the back of the school
+  rect(ROOMS.back.door - 3, 0, 6, 120, '#5a4a40');
+  ctx.fillStyle = '#3a8a5a';
+  ctx.beginPath(); ctx.moveTo(sx(ROOMS.back.door - 46), sy(126)); ctx.lineTo(sx(ROOMS.back.door + 40), sy(126)); ctx.lineTo(sx(ROOMS.back.door + 56), sy(110)); ctx.lineTo(sx(ROOMS.back.door + 40), sy(94)); ctx.lineTo(sx(ROOMS.back.door - 46), sy(94)); ctx.fill();
+  text('BACK OF SCHOOL', ROOMS.back.door + 2, 110, 9, '#ffffff');
 }
 
 /* ------------------------------------------------------ draw: the town */
@@ -841,6 +847,7 @@ const ROOMS = {
   books: { name: 'Toko Buku · inside', label: 'Toko Buku', door: 5570, x0: 24000, w: 1100 },
   hotel: { name: 'Grand Bintang · ballroom', label: 'the hotel', door: 7190, x0: 26000, w: 1500 },
   mall: { name: 'Bintang Mall · inside', label: 'Bintang Mall', door: 9650, x0: 28000, w: 1400 },
+  back: { name: 'Behind the school', label: 'the back of school', enter: 'Go behind the school', door: 3330, x0: 32000, w: 1300 },
 };
 /** after school some girls are inside: [room, distance from the room's left wall] */
 const INSIDE_SPOT = { rania: ['cafe', 610], ana: ['cafe', 1000], alya: ['books', 640], putri: ['hotel', 950], nadia: ['mall', 1030] };
@@ -872,6 +879,13 @@ async function goThrough(n) {
   camX = camTarget();
   fade.classList.remove('on');
   await wait(200);
+  if (n.room === 'back' && state.missing) {
+    await wait(900);
+    await bullyEvent(CRUSHES[state.missing]);
+    state.missing = null;
+    closeDialog();
+    updateHud();
+  }
   state.busy = false;
 }
 async function useThing(th) {
@@ -920,7 +934,37 @@ function floorBoards(r, col, line, step = 60) {
   ctx.fillRect(sx(r.x0), sy(0), r.w * S, 10 * S);
 }
 
+function drawBack(r, q, n, t) {
+  const x0 = r.x0, w = r.w;
+  ctx.fillStyle = skyGradient(q, 0, baseY());
+  ctx.fillRect(0, 0, W, H);
+  // the back wall of the school, grey and a bit sad
+  rect(x0 - 400, 0, w + 800, 330, mix('#c9c2bc', '#b8a29a', q));
+  for (let i = 0; i < 8; i++) rect(x0 + 60 + i * 170, 240, 90, 50, mix('#8a9aaa', '#9a8aa0', q));
+  rect(x0 - 400, 320, w + 800, 12, mix('#a8a098', '#9a8a88', q));
+  ctx.strokeStyle = 'rgba(90,70,70,0.35)'; ctx.lineWidth = 2 * S;
+  ctx.beginPath(); ctx.moveTo(sx(x0 + 300), sy(330)); ctx.lineTo(sx(x0 + 330), sy(260)); ctx.lineTo(sx(x0 + 310), sy(200)); ctx.stroke();
+  text('BAGAS WUZ HERE', x0 + 640, 170, 22, 'rgba(200,40,60,0.75)');
+  text('♥ ? ♥', x0 + 640, 140, 14, 'rgba(255,255,255,0.6)');
+  // bike shed
+  rect(x0 + 820, 0, 8, 200, '#5a6070'); rect(x0 + 1180, 0, 8, 200, '#5a6070'); rect(x0 + 800, 196, 410, 14, '#3a5aa8');
+  for (let i = 0; i < 4; i++) { const bx = x0 + 1050 + i * 34; ctx.strokeStyle = '#2a2a38'; ctx.lineWidth = 3 * S; ctx.beginPath(); ctx.arc(sx(bx), sy(18), 16 * S, 0, Math.PI * 2); ctx.stroke(); }
+  // bins and an old vending machine
+  rect(x0 + 380, 0, 90, 80, '#4f8a46'); rect(x0 + 376, 78, 98, 8, '#3a6a34');
+  rect(x0 + 480, 0, 90, 80, '#3a5aa8'); rect(x0 + 476, 78, 98, 8, '#2a4a88');
+  rect(x0 + 640, 0, 100, 190, '#e8504f'); rect(x0 + 652, 70, 76, 100, 'rgba(255,255,255,0.75)');
+  for (let k = 0; k < 6; k++) rect(x0 + 658 + (k % 3) * 24, 120 + Math.floor(k / 3) * 36, 16, 26, ['#ffcf3f', '#3a5aa8', '#4f8a46'][k % 3]);
+  text('OUT OF ORDER', x0 + 690, 40, 9, '#ffffff', 700);
+  // the ground: cracked asphalt
+  ctx.fillStyle = mix('#8a8478', '#7a6a6a', q); ctx.fillRect(0, sy(0), W, H);
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  for (let k = 0; k < 14; k++) ctx.fillRect(sx(x0 + k * 97), sy(-4 - (k % 3) * 10), 40 * S, 2 * S);
+  // the way back
+  rect(x0 + 60, 0, 60, 130, '#5a3a2a'); rect(x0 + 66, 6, 48, 118, mix('#bfe2ff', '#ffc89a', q));
+  rect(x0 + 50, 138, 80, 18, '#3a8a5a'); text('COURTYARD', x0 + 90, 147, 9, '#ffffff');
+}
 function drawRoom(r, q, n, t) {
+  if (state.room === 'back') { drawBack(r, q, n, t); return; }
   ctx.fillStyle = '#140f1e';
   ctx.fillRect(0, 0, W, H);
   const x0 = r.x0, w = r.w, id = state.room;
@@ -1434,7 +1478,7 @@ function interactables() {
     list.push({ kind: 'door', id: 'out', x: r.x0 + 90, who: { name: 'Go outside' }, room: null });
     for (const th of THINGS) if (th.room === state.room) list.push({ kind: 'thing', id: th.name, x: r.x0 + th.off, who: { name: th.gift ? `${th.name} 🎁` : th.name }, th });
   } else {
-    for (const [k, r] of Object.entries(ROOMS)) list.push({ kind: 'door', id: `in-${k}`, x: r.door, who: { name: `Enter ${r.label}` }, room: k });
+    for (const [k, r] of Object.entries(ROOMS)) list.push({ kind: 'door', id: `in-${k}`, x: r.door, who: { name: r.enter || `Enter ${r.label}` }, room: k });
   }
   return list;
 }
@@ -1621,7 +1665,9 @@ function updateHud() {
   ul.innerHTML = '';
   const top = topCrush();
   const ready = top && state.aff[top.id] >= WIN;
-  $('goal').textContent = isFinal() && top
+  $('goal').textContent = state.missing
+    ? `🚨 ${CRUSHES[state.missing].name} is missing! Find her behind the school (courtyard)`
+    : isFinal() && top
     ? `💌 Go to the hotel balcony → confess to ${top.name}!`
     : ready
       ? `💌 ${top.name} would say yes · Sunday 18:00, hotel balcony`
@@ -1743,10 +1789,49 @@ const QUESTIONS = [
   ['A stray kitten follows you home in the rain.', [['Take it home and dry it off.', 'kindness', 'Name it after me. Please.'], ['Find its owner, whatever it takes.', 'perseverance', 'Detective mode.'], ['Ask my parents first.', 'integrity', 'Responsible. Boring. Correct.']]],
   ['The teacher blames the whole class for something YOU did.', [['Raise my hand and admit it.', 'integrity', 'That takes guts.'], ['Admit it, and say sorry to everyone.', 'justice', 'Respect, honestly.'], ['Take everyone’s punishment myself.', 'bravery', 'Hero of class 12-A!']]],
   ['You get lost in the haunted house at the night market.', [['Walk deeper in. Ghosts fear ME.', 'bravery', 'The ghosts are scared of you now.'], ['Stay calm and find the exit slowly.', 'patience', 'Calm under pressure.'], ['Keep going until I find my friends.', 'perseverance', 'You’d never leave anyone behind.']]],
+  ['The class group chat is roasting someone who isn’t there. You…', [['Tell everyone to stop.', 'justice', 'Chat went silent. Respect.'], ['Message the person to check on them.', 'kindness', 'You’re a good one.'], ['Mute the chat and say nothing.', 'patience', 'Peace and quiet, huh.']]],
+  ['You get a 40 on your maths test. Your mum asks how it went.', [['Show her the test. Honest.', 'integrity', 'Brave AND honest. Respect.'], ['“Next one will be 90. Watch me.”', 'determination', 'Big words! Now do it.'], ['Ask her to help me study.', 'patience', 'That’s actually smart.']]],
+  ['A spider is on your crush’s desk. She screams.', [['Catch it and take it outside.', 'bravery', 'Hero. Spider hero.'], ['Calm her down first.', 'kindness', 'Smooth AND sweet.'], ['Let it walk away by itself.', 'patience', 'The spider thanks you.']]],
+  ['The canteen auntie gives you too much change.', [['Give it back right away.', 'integrity', 'The auntie will love you forever.'], ['Give it back and say thanks for the bakso.', 'kindness', 'Extra meatballs next time, for sure.'], ['Tell her the price is wrong on the menu too.', 'justice', 'A man of the people.']]],
+  ['Aboi tells the worst joke you have ever heard.', [['Laugh anyway. He tried.', 'kindness', 'Aboi is crying happy tears.'], ['Tell him honestly it was bad.', 'integrity', 'Ouch. But fair.'], ['Help him fix the punchline.', 'perseverance', 'A comedy duo is born.']]],
+  ['Your phone dies right before an important call.', [['Run and borrow a charger.', 'determination', 'Fastest charger hunt in history.'], ['Wait, charge, then call back.', 'patience', 'Calm as a cucumber.'], ['Borrow a friend’s phone and explain.', 'integrity', 'Problem solved.']]],
+  ['It’s pouring rain and your crush forgot her umbrella.', [['Give her mine. I’ll run.', 'kindness', 'You’re going to be SOAKED. Worth it.'], ['Share it and walk her home.', 'bravery', 'That’s basically a date.'], ['Wait with her until it stops.', 'patience', 'Rain dates are the best dates.']]],
+  ['You’re picked for a team you didn’t want. You…', [['Give it my everything anyway.', 'perseverance', 'That’s the spirit!'], ['Make friends with the new team.', 'kindness', 'Instant team captain.'], ['Ask the teacher why, politely.', 'justice', 'Fair question.']]],
+  ['Qai fell asleep in class. The teacher is coming!', [['Wake him up. Quick!', 'kindness', 'Qai owes you his life.'], ['Let him learn his lesson.', 'justice', 'Harsh. But fair.'], ['Cover for him with a fake question.', 'bravery', 'Legendary teamwork.']]],
+  ['You promised to help a friend move house, but your crush invites you out.', [['Keep my promise to my friend.', 'integrity', 'Friends first. Respect.'], ['Help my friend, then meet her after.', 'perseverance', 'Busy day! You can do it.'], ['Bring her along to help too!', 'kindness', 'Teamwork makes the dream work.']]],
+  ['Someone cuts in front of you in the bakso queue.', [['“Excuse me, the line starts back there.”', 'justice', 'Order has been restored.'], ['Let it go. It’s just bakso.', 'patience', 'A zen master of bakso.'], ['Ask if they’re in a hurry. Maybe they are.', 'kindness', 'Wow. So understanding.']]],
+  ['A new transfer student is eating lunch alone.', [['Sit with them and say hi.', 'kindness', 'You just made their whole week.'], ['Invite them to sit with the squad.', 'bravery', 'The squad grows!'], ['Give them space, then say hi tomorrow.', 'patience', 'Gentle. Nice.']]],
+  ['You’re running the 3 km race and your legs are dying.', [['Keep going. I will NOT stop.', 'determination', 'That’s the spirit!'], ['Slow down, but finish.', 'perseverance', 'Finishing is winning.'], ['Help the guy who fell behind me.', 'kindness', 'Real winner right there.']]],
+  ['Your friend borrowed 50k a month ago and forgot.', [['Remind him, nicely.', 'integrity', 'Honest and chill.'], ['Let it go. He’s my friend.', 'kindness', 'Generous!'], ['Wait. He’ll remember.', 'patience', 'Patient… maybe too patient.']]],
+  ['The stage lights fail in the middle of the school play.', [['Turn on my phone light and keep going.', 'bravery', 'The show must go on!'], ['Help fix the lights backstage.', 'perseverance', 'Behind-the-scenes hero.'], ['Calm the audience down.', 'kindness', 'Crisis handled.']]],
+  ['You find out a teacher marked your friend’s test wrong.', [['Tell the teacher, with proof.', 'justice', 'Justice, served with proof.'], ['Tell my friend so they can ask.', 'integrity', 'Honest and helpful.'], ['Help them prepare what to say.', 'kindness', 'What a friend.']]],
+  ['Your crush says she likes a song you think is terrible.', [['Listen to it ten times. Maybe I’ll like it.', 'perseverance', 'Dedication.'], ['Tell her I don’t like it, but I like her taste.', 'integrity', 'Honest and smooth.'], ['Ask her why she loves it.', 'patience', 'Ooh, deep conversation.']]],
+  ['There’s one slice of martabak left and five people.', [['Cut it into five tiny pieces.', 'justice', 'Perfectly fair.'], ['Give it to whoever is hungriest.', 'kindness', 'Hamzah says thank you.'], ['Rock-paper-scissors. Winner takes all.', 'bravery', 'Risky! I like it.']]],
+  ['Your bike gets a flat tyre on the way to school.', [['Push it all the way there.', 'determination', 'Unstoppable.'], ['Fix it myself on the spot.', 'perseverance', 'Bike mechanic unlocked.'], ['Call the squad for help.', 'patience', 'That’s what friends are for.']]],
+  ['You see someone drop their wallet on the train.', [['Chase them and give it back.', 'bravery', 'Train hero!'], ['Hand it to the station guard.', 'integrity', 'The right call.'], ['Hold it and wait at the station.', 'patience', 'Patient AND good.']]],
+  ['Your crush is sad but won’t say why.', [['Sit with her quietly.', 'patience', 'Sometimes that’s all she needs.'], ['Buy her favourite snack.', 'kindness', 'Snacks heal all.'], ['Gently ask again later.', 'perseverance', 'She’ll open up.']]],
+  ['You accidentally break a classroom window with a football.', [['Tell the teacher straight away.', 'integrity', 'That takes guts.'], ['Offer to pay for it.', 'justice', 'Fair and square.'], ['Admit it and help clean up.', 'bravery', 'Owning it. Respect.']]],
+  ['A cat steals your fried chicken at the night market.', [['Let it have it. It looks hungry.', 'kindness', 'The cat has adopted you now.'], ['Chase it! That was MY chicken!', 'determination', 'Did you win?'], ['Buy another one. Life goes on.', 'patience', 'Very wise.']]],
+  ['You have to give a speech in front of the whole school.', [['Go up there and nail it.', 'bravery', 'Standing ovation!'], ['Practise it fifty times first.', 'perseverance', 'Preparation king.'], ['Speak from the heart, no script.', 'integrity', 'Real and honest.']]],
+  ['Lindan’s weather forecast is wrong AGAIN. Everyone laughs.', [['Defend him. Weather is hard!', 'justice', 'Lindan felt that.'], ['Help him check the forecast next time.', 'kindness', 'Science buddies!'], ['Tell him to keep trying.', 'perseverance', 'He’ll get it right one day.']]],
+  ['Your friend wants to quit the football team after one loss.', [['“One loss means nothing. Keep going!”', 'determination', 'Captain material.'], ['Listen to why first.', 'patience', 'Good listener.'], ['Train with him every morning.', 'perseverance', 'Morning runs, here we come.']]],
+  ['You win a free trip, but only for one person.', [['Give it to my mum.', 'kindness', 'Best kid ever.'], ['Share the prize money with the squad.', 'justice', 'Everybody wins!'], ['Go, and bring back gifts for everyone.', 'integrity', 'Souvenirs for all!']]],
+  ['Ghanim’s code crashes right before his demo.', [['Debug it with him all night.', 'perseverance', 'Coffee and code.'], ['Tell him it’s okay to show it anyway.', 'bravery', 'Live demos are scary!'], ['Cheer him up with bakso.', 'kindness', 'Bakso fixes bugs. Probably.']]],
   ['Last question! Why do you want a crush before college?', [['Because I never give up on a pact.', 'determination', 'A promise is a promise!'], ['Because I want to make someone happy.', 'kindness', 'Aww. Go get her.'], ['Because I want to be honest about my feelings.', 'integrity', 'Then tell her tonight.']]],
 ];
+const Q_PER_DAY = 3, Q_TIMES = [8.5, 12, 16.6];
+let qOrder = null;
+/** a different mix of questions every game; the last question is always last */
+function questionFor(n) {
+  if (!qOrder) {
+    qOrder = QUESTIONS.slice(0, -1).map((_, i) => i);
+    for (let i = qOrder.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [qOrder[i], qOrder[j]] = [qOrder[j], qOrder[i]]; }
+  }
+  const total = DAYS.length * Q_PER_DAY;
+  return n === total - 1 ? QUESTIONS.length - 1 : qOrder[n % qOrder.length];
+}
 async function questionTime(n) {
-  const [text, answers] = QUESTIONS[n];
+  const [text, answers] = QUESTIONS[questionFor(n)];
   const asker = FRIENDS.filter((f) => f !== state.me)[n % (FRIENDS.length - 1)].name;
   await say(asker, `QUESTION TIME! ${text}`, 'happy', 'sparkle');
   const i = await choose(answers.map((a) => a[0]));
@@ -1757,14 +1842,28 @@ async function questionTime(n) {
 }
 
 /* ------------------------------------------------- the bully, Bagas */
+/** from Thursday, the girl you like most goes missing after school */
+async function missingAlert(c) {
+  const me = state.me.name;
+  state.missing = c.id;
+  const a = other('Ghiffy', 'Aboi'), b = other('Lindan', 'Ghanim');
+  await say(a, `${me}!! Have you seen ${c.name}? She was supposed to meet us after school, but she’s GONE.`, 'surprised', 'shock');
+  await say(b, `I saw Bagas following her toward the BACK OF THE SCHOOL. That guy’s been bugging her all week…`, 'annoyed', 'sweat');
+  await say(me, `…Behind the school? I’m going. NOW.`, 'annoyed', 'anger');
+  await say('', `Find ${c.name}! The path to the back of the school is in the courtyard, next to the cherry tree.`);
+  toast(`🚨 ${c.name} is missing! Go behind the school`);
+  closeDialog();
+  updateHud();
+}
 const BAGAS_LOOK = look({ hair: '#1a1416', hairHi: '#3a2c2c', style: 'messy', top: '#c8303a', topSh: '#a02028', tie: '#7a2a3a', skin: '#d9a07a' });
 async function bullyEvent(c) {
   const me = state.me.name;
   state.bullyDone = true;
-  await say('', `Before you can say hi to ${c.name}, a tall boy in a red varsity jacket shoves past you.`);
-  await say('Bagas', `Oi. ${c.name}’s going to prom with ME. Right, ${c.name}?`, 'smug');
-  await say(c.name, '…I never said that.', 'annoyed', 'sweat');
-  await say('Bagas', `See? She’s shy. Now get lost, ${me}. Unless you want to fight about it.`, 'smug', 'anger');
+  await say('', `Behind the bike shed you find ${c.name}. Bagas is standing in front of her, blocking the way out.`);
+  await say(c.name, `${me}!! You came!`, 'surprised', 'shock');
+  await say('Bagas', `Oi. This is a private conversation, nerd. ${c.name}’s going to prom with ME. Right, ${c.name}?`, 'smug');
+  await say(c.name, 'I already told you NO, Bagas. Let me go!', 'annoyed', 'anger');
+  await say('Bagas', `She’s just shy. Now get lost, ${me}. Unless you want to fight about it.`, 'smug', 'anger');
   const i = await choose(['…Fine. Let’s settle this.', `${c.name} can decide for herself.`, '(Step between them.)']);
   addSoul(['bravery', 'justice', 'integrity'][i]);
   await say(me, i === 1 ? `She can decide for herself, Bagas. And I’m not going anywhere.` : 'Bring it.', 'annoyed', 'shock');
@@ -1796,8 +1895,6 @@ async function talkCrush(c) {
     await say(c.name, '…Shouldn’t you be somewhere right now?');
     return false;
   }
-  // from Thursday, the class bully shows up when you visit the girl you like most
-  if (!state.bullyDone && state.day >= 3 && afterSchool() && !c.secret && c.id === topCrush()?.id && state.aff[c.id] >= 1) { await bullyEvent(c); return true; }
   if (state.gift) {
     if (!state.met.has(c.id)) { await introCard(c); state.met.add(c.id); }
     const g = state.gift;
@@ -2280,6 +2377,9 @@ async function nextDay() {
   state.busy = true;
   fade.classList.add('on');
   await wait(900);
+  const lost = state.missing && CRUSHES[state.missing];
+  state.missing = null;
+  if (lost) state.bullyDone = true;
   state.day++;
   state.room = null;
   state.clock = DAY_START;
@@ -2290,6 +2390,13 @@ async function nextDay() {
   updateHud();
   fade.classList.remove('on');
   await eyecatch();
+  if (lost) {
+    await say(lost.name, `…I waited for you yesterday, behind the school. A teacher finally made Bagas leave.`, 'sad');
+    state.aff[lost.id] = Math.max(0, state.aff[lost.id] - 1);
+    toast(`${lost.name} ♥ −1`);
+    closeDialog();
+    updateHud();
+  }
   state.busy = false;
 }
 
@@ -2299,10 +2406,20 @@ async function tickClock(dt) {
   if (!state.started || state.ended || state.busy || !state.me) return;
   const before = state.clock;
   state.clock += dt / SECONDS_PER_HOUR;
-  // question time: once in the morning, once after school
-  const slot = state.clock >= 16.25 ? 1 : state.clock >= 8.5 ? 0 : -1;
-  const qn = state.day * 2 + slot;
-  if (slot >= 0 && qn < QUESTIONS.length && !state.asked.has(qn) && !road && !isFinal()) {
+  // the bully takes your crush behind the school (once, Thursday to Saturday)
+  if (!state.bullyDone && !state.missing && state.day >= 3 && state.day < LAST_DAY && state.clock >= 15.6 && !road && state.room !== 'back') {
+    const c = topCrush();
+    if (c && !c.secret && state.aff[c.id] >= 1) {
+      state.busy = true;
+      await missingAlert(c);
+      if (!state.ended) state.busy = false;
+      return;
+    }
+  }
+  // question time: morning, lunch and after school
+  const slot = Q_TIMES.filter((h) => state.clock >= h).length - 1;
+  const qn = state.day * Q_PER_DAY + slot;
+  if (slot >= 0 && !state.asked.has(qn) && !road && !isFinal() && !state.missing) {
     state.asked.add(qn);
     state.busy = true;
     await questionTime(qn);
@@ -2560,6 +2677,7 @@ function frame(now) {
     nightFall(n, t);
     updateCars(dt);
     // doors you can walk through, with a heart when someone inside has time for you
+    if (state.started && state.missing && near?.id !== 'in-back') heartMark(ROOMS.back.door, t);
     if (camX + viewW() > TOWN) {
       door(ROOMS.cafe.door, n > 0 ? 'rgba(255,214,140,0.95)' : '#ffe9c4');
       door(ROOMS.games.door, '#ff9fc2');
@@ -2583,6 +2701,7 @@ function frame(now) {
     const face = Math.abs(state.x - x) < 220 ? (state.x < x ? -1 : 1) : -1;
     walker(c.name, { x: sx(x), y: sy(0), k: S, face, look: c.look, t, phase: 0, moving: false, talking: speaking === c.name, seed: x, blush: state.aff[c.id] >= 4 && Math.abs(state.x - x) < 140 });
   }
+  if (state.room === 'back' && state.missing) walker('Bagas', { x: sx(ROOMS.back.x0 + 960), y: sy(0), k: S, face: -1, look: BAGAS_LOOK, t, phase: 0, moving: false, seed: 7 });
   drawRoadEvent(dt, t);
   if (state.me) walker(state.me.name, { x: sx(state.x), y: sy(0), k: S, face: state.face, look: state.me.look, t, phase: state.phase, moving: state.moving, talking: speaking === state.me.name, seed: 3, running: keys.has('shift') || hold.run });
 
@@ -2754,9 +2873,10 @@ async function testRun(mode) {
   else if (mode === 'bully') {
     const girl = c.secret ? CRUSHES.ana : c;
     state.met.add(girl.id); state.aff[girl.id] = 2; state.last = girl.id;
-    at(3, SCHOOL_OUT + 0.3, crushX(girl) - 120, INSIDE_SPOT[girl.id]?.[0] || null);
-    state.asked = new Set(QUESTIONS.map((_, i) => i)); // no questions during the test
-    await bullyEvent(girl);
+    at(3, SCHOOL_OUT + 0.7, ROOMS.back.door - 420);
+    state.asked = new Set([...Array(DAYS.length * Q_PER_DAY).keys()]); // no questions during the test
+    roadDay = state.day;
+    await missingAlert(girl);
   }
   else if (mode === 'quiz') {
     at(0, 8.4, 400);
