@@ -298,7 +298,8 @@ const state = {
   room: null, // which building you are inside, if any
   gift: null, giftDay: -1,
   soul: {}, asked: new Set(), bullyDone: false,
-  missing: null, // the girl Bagas took behind the school
+  missing: null, // the girl a bully took somewhere
+  fight: null, fightsDone: new Set(), wins: 0,
 };
 /** a girl says yes at the confession with at least WIN points (two full hearts) */
 const WIN = 4, MAX_AFF = 6;
@@ -365,7 +366,7 @@ function placeFriends() {
 }
 const TOWN_SPOT = { ana: 4640, rania: 4820, alya: 5560, kirana: 5960, sekar: 6290, nayla: 6560, putri: 7000, thisa: 8460, nadia: 9700, renata: 10420 };
 const HOTEL_BALCONY = 7460;
-const crushX = (c) => (state.missing === c.id ? ROOMS.back.x0 + 880 : isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : c.id === 'mira' ? miraX : afterSchool() ? (INSIDE_SPOT[c.id] ? insideX(c.id) : TOWN_SPOT[c.id]) : c.x);
+const crushX = (c) => (state.missing === c.id ? placeNow().x() : isFinal() && c.id === topCrush()?.id ? HOTEL_BALCONY : c.id === 'mira' ? miraX : afterSchool() ? (INSIDE_SPOT[c.id] ? insideX(c.id) : TOWN_SPOT[c.id]) : c.x);
 async function addAff(c, n) {
   const before = state.aff[c.id];
   state.aff[c.id] = Math.min(MAX_AFF, before + n);
@@ -879,10 +880,9 @@ async function goThrough(n) {
   camX = camTarget();
   fade.classList.remove('on');
   await wait(200);
-  if (n.room === 'back' && state.missing) {
+  if (state.missing && placeNow().room && n.room === placeNow().room) {
     await wait(900);
     await bullyEvent(CRUSHES[state.missing]);
-    state.missing = null;
     closeDialog();
     updateHud();
   }
@@ -1542,6 +1542,7 @@ const stage = { right: null, speaker: null, ex: {}, fx: null };
 function lookOf(name) {
   if (name === state.me?.name) return state.me.look;
   if (name === 'Bagas') return BAGAS_LOOK;
+  if (name === 'Kevin') return KEVIN_LOOK;
   return (FRIENDS.find((f) => f.name === name) || Object.values(CRUSHES).find((c) => c.name === name))?.look;
 }
 function paintPortrait(cv, name, t) {
@@ -1666,7 +1667,7 @@ function updateHud() {
   const top = topCrush();
   const ready = top && state.aff[top.id] >= WIN;
   $('goal').textContent = state.missing
-    ? `🚨 ${CRUSHES[state.missing].name} is missing! Find her behind the school (courtyard)`
+    ? `🚨 ${CRUSHES[state.missing].name} is missing! Find her ${placeNow().where}`
     : isFinal() && top
     ? `💌 Go to the hotel balcony → confess to ${top.name}!`
     : ready
@@ -1842,51 +1843,100 @@ async function questionTime(n) {
 }
 
 /* ------------------------------------------------- the bully, Bagas */
-/** from Thursday, the girl you like most goes missing after school */
-async function missingAlert(c) {
+/** three showdowns: Thursday, Friday and Saturday after school */
+const FIGHTS = [
+  { day: 3, foe: 'bagas', who: 'Bagas', place: 'back' },
+  { day: 4, foe: 'kevin', who: 'Kevin', place: 'station' },
+  { day: 5, foe: 'bagas2', who: 'Bagas', place: 'roof' },
+];
+const PLACES = {
+  back: { room: 'back', x: () => ROOMS.back.x0 + 880, where: 'behind the school', hint: 'The path to the back of the school is in the courtyard, next to the cherry tree.' },
+  station: { room: null, x: () => STATION + 420, where: 'at the train station', hint: 'The train station is in town, just past the Grand Bintang Hotel.' },
+  roof: { room: null, x: () => 3700, where: 'on the school roof', hint: 'The rooftop is right after the courtyard, next to the water tank.' },
+};
+const BAGAS_LOOK = look({ hair: '#1a1416', hairHi: '#3a2c2c', style: 'messy', top: '#c8303a', topSh: '#a02028', tie: '#7a2a3a', skin: '#d9a07a' });
+const KEVIN_LOOK = look({ hair: '#141018', hairHi: '#e8c860', style: 'short', top: '#7a4ab0', topSh: '#5a3490', skin: '#c98a62' });
+const fightNow = () => (state.fight === null ? null : FIGHTS[state.fight]);
+const placeNow = () => (fightNow() ? PLACES[fightNow().place] : null);
+
+/** after school the girl you like most goes missing, and a friend tells you where */
+async function missingAlert(c, n) {
   const me = state.me.name;
+  const F = FIGHTS[n], P = PLACES[F.place];
   state.missing = c.id;
+  state.fight = n;
   const a = other('Ghiffy', 'Aboi'), b = other('Lindan', 'Ghanim');
-  await say(a, `${me}!! Have you seen ${c.name}? She was supposed to meet us after school, but she’s GONE.`, 'surprised', 'shock');
-  await say(b, `I saw Bagas following her toward the BACK OF THE SCHOOL. That guy’s been bugging her all week…`, 'annoyed', 'sweat');
-  await say(me, `…Behind the school? I’m going. NOW.`, 'annoyed', 'anger');
-  await say('', `Find ${c.name}! The path to the back of the school is in the courtyard, next to the cherry tree.`);
-  toast(`🚨 ${c.name} is missing! Go behind the school`);
+  if (F.foe === 'bagas') {
+    await say(a, `${me}!! Have you seen ${c.name}? She was supposed to meet us after school, but she’s GONE.`, 'surprised', 'shock');
+    await say(b, 'I saw Bagas following her toward the BACK OF THE SCHOOL. That guy’s been bugging her all week…', 'annoyed', 'sweat');
+    await say(me, '…Behind the school? I’m going. NOW.', 'annoyed', 'anger');
+  } else if (F.foe === 'kevin') {
+    await say(a, `${me}! ${c.name} got a message from “you” asking her to meet at the TRAIN STATION. You didn’t send that, right?`, 'surprised', 'shock');
+    await say(b, 'Kevin from the basketball team was laughing about it. He’s Bagas’s cousin… he’s waiting there with her.', 'annoyed', 'sweat');
+    await say(me, 'Kevin. Of course it’s Kevin. I’m going.', 'annoyed', 'anger');
+  } else {
+    await say(a, `${me}!!! Bagas is BACK. He took ${c.name} up to the school ROOF!`, 'surprised', 'shock');
+    await say(b, 'He kept saying “round two”. And his hair is… enormous. Be careful, bro.', 'annoyed', 'sweat');
+    await say(me, 'Not again. This time I end it.', 'annoyed', 'anger');
+  }
+  await say('', `Find ${c.name} ${P.where}! ${P.hint}`);
+  toast(`🚨 ${c.name} is missing! She’s ${P.where}`);
   closeDialog();
   updateHud();
 }
-const BAGAS_LOOK = look({ hair: '#1a1416', hairHi: '#3a2c2c', style: 'messy', top: '#c8303a', topSh: '#a02028', tie: '#7a2a3a', skin: '#d9a07a' });
+
+/** the scene before each battle, then the battle itself */
 async function bullyEvent(c) {
   const me = state.me.name;
-  state.bullyDone = true;
-  await say('', `Behind the bike shed you find ${c.name}. Bagas is standing in front of her, blocking the way out.`);
-  await say(c.name, `${me}!! You came!`, 'surprised', 'shock');
-  await say('Bagas', `Oi. This is a private conversation, nerd. ${c.name}’s going to prom with ME. Right, ${c.name}?`, 'smug');
-  await say(c.name, 'I already told you NO, Bagas. Let me go!', 'annoyed', 'anger');
-  await say('Bagas', `She’s just shy. Now get lost, ${me}. Unless you want to fight about it.`, 'smug', 'anger');
+  const n = state.fight, F = FIGHTS[n];
+  state.fightsDone.add(F.foe);
+  if (F.foe === 'bagas') {
+    await say('', `Behind the bike shed you find ${c.name}. Bagas is standing in front of her, blocking the way out.`);
+    await say(c.name, `${me}!! You came!`, 'surprised', 'shock');
+    await say('Bagas', `Oi. This is a private conversation, nerd. ${c.name}’s going to prom with ME. Right, ${c.name}?`, 'smug');
+    await say(c.name, 'I already told you NO, Bagas. Let me go!', 'annoyed', 'anger');
+    await say('Bagas', `She’s just shy. Now get lost, ${me}. Unless you want to fight about it.`, 'smug', 'anger');
+  } else if (F.foe === 'kevin') {
+    await say('', `At the station, ${c.name} is sitting on a bench. Kevin is spinning a basketball right in front of her face.`);
+    await say(c.name, `${me}! He said YOU sent that message!`, 'surprised', 'shock');
+    await say('Kevin', `Gotcha. You made my cousin cry, so now you deal with ME. One on one, ${me}.`, 'smug', 'anger');
+    await say(c.name, 'Kevin, this is so childish!', 'annoyed', 'anger');
+    await say('Kevin', 'Childish? I’m the CAPTAIN. Let’s play.', 'smug');
+  } else {
+    await say('', `On the rooftop the wind is strong. Bagas stands in front of ${c.name}. His hair is twice as tall as before.`);
+    await say('Bagas', `Round two, ${me}. Prom is TOMORROW. Whoever wins takes her to prom.`, 'smug', 'anger');
+    await say(c.name, 'I’m not a PRIZE, Bagas!', 'annoyed', 'anger');
+    await say('Bagas', '…That’s what HE said last time too. ENOUGH TALK!', 'annoyed', 'shock');
+  }
   const i = await choose(['…Fine. Let’s settle this.', `${c.name} can decide for herself.`, '(Step between them.)']);
   addSoul(['bravery', 'justice', 'integrity'][i]);
-  await say(me, i === 1 ? `She can decide for herself, Bagas. And I’m not going anywhere.` : 'Bring it.', 'annoyed', 'shock');
+  await say(me, i === 1 ? `She can decide for herself. And I’m not going anywhere.` : 'Bring it.', 'annoyed', 'shock');
   closeDialog();
   const musicOn = soundBtn.getAttribute('aria-pressed') === 'true';
   fadeTrack(0, 600);
-  const out = await battle({ me, crush: c.name, portrait: './art/bagas.webp', muted: !musicOn, onTrait: (t) => addSoul(t) });
+  const S = SOULS[topSoul()];
+  const out = await battle({ me, crush: c.name, foe: F.foe, lv: 1 + state.wins, soul: topSoul(), soulName: S.name, soulCol: S.col, muted: !musicOn, onTrait: (t) => addSoul(t) });
   if (soundBtn.getAttribute('aria-pressed') === 'true') fadeTrack(0.65, 1800);
   state.last = c.id;
-  if (out === 'spared') {
-    await say(c.name, `You didn’t even need to be mean to him. That was… really cool, ${me}.`, 'blush', 'heart');
-    toast(`♥ ${c.name} +2 · you spared Bagas`);
+  state.missing = null;
+  state.fight = null;
+  if (out === 'fled') {
+    await say(c.name, `…It’s okay. ${F.who} is a jerk anyway. Thanks for trying.`, 'sad');
     closeDialog();
-    await addAff(c, 2);
-  } else if (out === 'won') {
-    await say(c.name, `${me}! You actually stood up to him! My hero!`, 'happy', 'heart');
-    toast(`♥ ${c.name} +2 · Bagas ran away`);
-    closeDialog();
-    await addAff(c, 2);
-  } else {
-    await say(c.name, '…It’s okay. Bagas is a jerk anyway. Thanks for trying.', 'sad');
-    closeDialog();
+    return;
   }
+  state.wins++;
+  const lines = {
+    bagas: [`You didn’t even need to be mean to him. That was… really cool, ${me}.`, `${me}! You actually stood up to him! My hero!`],
+    kevin: [`You made KEVIN smile. Who even are you, ${me}?`, `He ran away?! Kevin has never lost a game in his life!`],
+    bagas2: [`You saved me twice… and you even made Bagas your friend. ${me}, you’re amazing.`, `It’s over. It’s really over. …Thank you for coming for me, ${me}.`],
+  }[F.foe];
+  await say(c.name, out === 'spared' ? lines[0] : lines[1], 'blush', 'heart');
+  const gain = F.foe === 'bagas2' ? 3 : 2;
+  toast(`LV UP! LV ${1 + state.wins} · ${c.name} ♥ +${gain}`);
+  song.pickup();
+  closeDialog();
+  await addAff(c, gain);
 }
 
 async function talkCrush(c) {
@@ -2378,8 +2428,9 @@ async function nextDay() {
   fade.classList.add('on');
   await wait(900);
   const lost = state.missing && CRUSHES[state.missing];
+  const lostF = fightNow(), lostP = placeNow();
   state.missing = null;
-  if (lost) state.bullyDone = true;
+  state.fight = null;
   state.day++;
   state.room = null;
   state.clock = DAY_START;
@@ -2391,7 +2442,7 @@ async function nextDay() {
   fade.classList.remove('on');
   await eyecatch();
   if (lost) {
-    await say(lost.name, `…I waited for you yesterday, behind the school. A teacher finally made Bagas leave.`, 'sad');
+    await say(lost.name, `…I waited for you yesterday, ${lostP.where}. A teacher finally made ${lostF.who} leave.`, 'sad');
     state.aff[lost.id] = Math.max(0, state.aff[lost.id] - 1);
     toast(`${lost.name} ♥ −1`);
     closeDialog();
@@ -2406,15 +2457,26 @@ async function tickClock(dt) {
   if (!state.started || state.ended || state.busy || !state.me) return;
   const before = state.clock;
   state.clock += dt / SECONDS_PER_HOUR;
-  // the bully takes your crush behind the school (once, Thursday to Saturday)
-  if (!state.bullyDone && !state.missing && state.day >= 3 && state.day < LAST_DAY && state.clock >= 15.6 && !road && state.room !== 'back') {
+  // a bully takes your crush somewhere (Thursday, Friday, Saturday)
+  const fi = FIGHTS.findIndex((f) => f.day === state.day && !state.fightsDone.has(f.foe));
+  if (fi >= 0 && !state.missing && state.clock >= 15.6 && !road && state.room !== 'back') {
     const c = topCrush();
     if (c && !c.secret && state.aff[c.id] >= 1) {
       state.busy = true;
-      await missingAlert(c);
+      await missingAlert(c, fi);
       if (!state.ended) state.busy = false;
       return;
     }
+  }
+  // found her (outdoors): the showdown starts
+  if (state.missing && !state.room && !placeNow().room && Math.abs(state.x - placeNow().x()) < 230) {
+    state.busy = true;
+    state.moving = false;
+    await bullyEvent(CRUSHES[state.missing]);
+    closeDialog();
+    updateHud();
+    if (!state.ended) state.busy = false;
+    return;
   }
   // question time: morning, lunch and after school
   const slot = Q_TIMES.filter((h) => state.clock >= h).length - 1;
@@ -2677,7 +2739,7 @@ function frame(now) {
     nightFall(n, t);
     updateCars(dt);
     // doors you can walk through, with a heart when someone inside has time for you
-    if (state.started && state.missing && near?.id !== 'in-back') heartMark(ROOMS.back.door, t);
+    if (state.started && state.missing && placeNow().room === 'back' && near?.id !== 'in-back') heartMark(ROOMS.back.door, t);
     if (camX + viewW() > TOWN) {
       door(ROOMS.cafe.door, n > 0 ? 'rgba(255,214,140,0.95)' : '#ffe9c4');
       door(ROOMS.games.door, '#ff9fc2');
@@ -2701,7 +2763,11 @@ function frame(now) {
     const face = Math.abs(state.x - x) < 220 ? (state.x < x ? -1 : 1) : -1;
     walker(c.name, { x: sx(x), y: sy(0), k: S, face, look: c.look, t, phase: 0, moving: false, talking: speaking === c.name, seed: x, blush: state.aff[c.id] >= 4 && Math.abs(state.x - x) < 140 });
   }
-  if (state.room === 'back' && state.missing) walker('Bagas', { x: sx(ROOMS.back.x0 + 960), y: sy(0), k: S, face: -1, look: BAGAS_LOOK, t, phase: 0, moving: false, seed: 7 });
+  if (state.missing && (placeNow().room || null) === (state.room || null)) {
+    const bx = placeNow().x() + 80, who = fightNow().who;
+    walker(who, { x: sx(bx), y: sy(0), k: S, face: -1, look: lookOf(who), t, phase: 0, moving: false, seed: 7 });
+    if (Math.abs(state.x - bx) < 420) text(who.toUpperCase(), bx, -22, 12, '#ff6a7a');
+  }
   drawRoadEvent(dt, t);
   if (state.me) walker(state.me.name, { x: sx(state.x), y: sy(0), k: S, face: state.face, look: state.me.look, t, phase: state.phase, moving: state.moving, talking: speaking === state.me.name, seed: 3, running: keys.has('shift') || hold.run });
 
@@ -2709,7 +2775,7 @@ function frame(now) {
   if (state.started && !state.ended) {
     for (const c of Object.values(CRUSHES)) {
       const x = crushX(c);
-      const show = isFinal() ? c.id === topCrush()?.id : sceneReady(c);
+      const show = state.missing === c.id || (isFinal() ? c.id === topCrush()?.id : sceneReady(c));
       if (show && near?.id !== c.id) heartMark(x, t);
     }
     for (const n of interactables()) {
@@ -2870,13 +2936,17 @@ async function testRun(mode) {
     else at(c.secret ? 2 : 1, SCHOOL_OUT + 0.1, (TOWN_SPOT[c.id] || 4700) - 160);
     toast(INSIDE_SPOT[c.id] ? `Test · inside ${ROOMS[INSIDE_SPOT[c.id][0]].label}` : 'Test · after school in town');
   }
-  else if (mode === 'bully') {
+  else if (/^bully[123]$/.test(mode)) {
+    const n = +mode.slice(5) - 1, F = FIGHTS[n];
     const girl = c.secret ? CRUSHES.ana : c;
     state.met.add(girl.id); state.aff[girl.id] = 2; state.last = girl.id;
-    at(3, SCHOOL_OUT + 0.7, ROOMS.back.door - 420);
+    for (const f of FIGHTS.slice(0, n)) state.fightsDone.add(f.foe);
+    state.wins = n;
+    const startX = { back: ROOMS.back.door - 40, station: STATION - 300, roof: 3400 }[F.place];
+    at(F.day, SCHOOL_OUT + 0.7, startX);
     state.asked = new Set([...Array(DAYS.length * Q_PER_DAY).keys()]); // no questions during the test
     roadDay = state.day;
-    await missingAlert(girl);
+    await missingAlert(girl, n);
   }
   else if (mode === 'quiz') {
     at(0, 8.4, 400);

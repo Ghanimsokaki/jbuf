@@ -1,7 +1,9 @@
 /**
- * The showdown with the class bully. A turn-based battle: pick an action,
- * then dodge his insults with your heart inside the box.
- * The battle music is an original chiptune piece made with Web Audio.
+ * The bully battles. Turn-based: pick an action, then dodge their attacks
+ * with your heart inside the box. Each bully has their own attacks, ACT
+ * options and lines; the last one has a second phase.
+ * The battle music is an original chiptune piece made with Web Audio,
+ * with a faster "finale" arrangement for the last fight.
  */
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -9,10 +11,9 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
 /* ------------------------------------------------------------ the music */
-// 168 bpm, A minor: Am – F – G – E. Square-wave lead, pulse arpeggio,
-// octave-jumping bass and a noise drum kit.
-const BPM = 168;
-const STEP = 60 / BPM / 4; // one sixteenth
+// A minor: Am – F – G – E, square-wave lead, pulse arpeggio, octave bass
+// and a noise drum kit. The finale plays it faster, a fourth higher, with
+// a counter-melody and double-time hats.
 const PROG = [
   { bass: 45, arp: [57, 60, 64] },
   { bass: 41, arp: [53, 57, 60] },
@@ -30,9 +31,16 @@ const LEAD = [
   [[83, 0, 2], [81, 2, 2], [79, 4, 2], [74, 6, 2], [79, 8, 4], [83, 12, 4]],
   [[88, 0, 8], [86, 8, 2], [83, 10, 2], [80, 12, 4]],
 ];
+// the finale's counter-melody, long notes under the lead
+const COUNTER = [[64, 0, 8], [60, 8, 8], [65, 0, 8], [64, 8, 8], [62, 0, 8], [67, 8, 8], [64, 0, 16]];
 
 class BattleMusic {
-  constructor(muted) { this.muted = muted; }
+  constructor(muted, finale) {
+    this.muted = muted;
+    this.finale = finale;
+    this.step16 = 60 / (finale ? 186 : 168) / 4;
+    this.key = finale ? 5 : 0;
+  }
   start() {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
@@ -40,7 +48,6 @@ class BattleMusic {
     this.out = ctx.createGain();
     this.out.gain.value = this.muted ? 0 : 0.2;
     this.out.connect(ctx.destination);
-    // a shared noise buffer for the drums
     const len = ctx.sampleRate * 0.4;
     this.noise = ctx.createBuffer(1, len, ctx.sampleRate);
     const d = this.noise.getChannelData(0);
@@ -82,19 +89,20 @@ class BattleMusic {
     s.start(t); s.stop(t + dur + 0.01);
   }
   schedule() {
-    const ctx = this.ctx;
+    const ctx = this.ctx, k = this.key, STEP = this.step16;
     while (this.next < ctx.currentTime + 0.12) {
       const t = this.next, s = this.step;
       const bar = Math.floor(s / 16) % 8, i = s % 16;
       const ch = PROG[bar % 4];
-      // bass: eighth notes, jumping an octave
-      if (i % 2 === 0) this.tone('square', hz(ch.bass + (i % 4 === 2 ? 12 : 0)), t, STEP * 1.8, 0.16);
-      // arpeggio
-      this.tone('square', hz(ch.arp[i % 3] + 12), t, STEP * 0.9, 0.035);
-      // lead
-      for (const [m, at, l] of LEAD[bar]) if (at === i) this.tone('square', hz(m), t, STEP * l * 0.95, 0.09);
-      // drums
-      if (i === 0 || i === 8 || (bar % 2 && i === 10)) this.drum(t, 'kick');
+      if (i % 2 === 0) this.tone('square', hz(ch.bass + k + (i % 4 === 2 ? 12 : 0)), t, STEP * 1.8, 0.16);
+      this.tone('square', hz(ch.arp[i % 3] + k + 12), t, STEP * 0.9, 0.035);
+      for (const [m, at, l] of LEAD[bar]) if (at === i) this.tone('square', hz(m + k), t, STEP * l * 0.95, 0.09);
+      if (this.finale) {
+        const c = COUNTER[bar % COUNTER.length];
+        if (c[1] === i) this.tone('triangle', hz(c[0] + k), t, STEP * c[2] * 0.95, 0.12);
+        if (i % 2 === 1) this.drum(t, 'hat');
+      }
+      if (i === 0 || i === 8 || (bar % 2 && i === 10) || (this.finale && i === 14)) this.drum(t, 'kick');
       if (i === 4 || i === 12) this.drum(t, 'snare');
       if (i % 2 === 0) this.drum(t, 'hat');
       this.next += STEP;
@@ -112,49 +120,107 @@ class BattleMusic {
   }
   hit() { if (this.ctx && !this.muted) this.tone('sawtooth', 110, this.ctx.currentTime, 0.18, 0.25); }
   blip() { if (this.ctx && !this.muted) this.tone('square', 880, this.ctx.currentTime, 0.05, 0.05); }
+  power() { if (this.ctx && !this.muted) for (let k = 0; k < 6; k++) this.tone('square', hz(57 + k * 5), this.ctx.currentTime + k * 0.07, 0.12, 0.08); }
 }
 
-/* ------------------------------------------------------------ the battle */
-const WORDS = ['LOSER', 'NERD', 'HA!', 'WEAK', 'LOL', 'NOOB', 'CRINGE'];
-const COMEBACKS = [
-  '“Nice jacket. Did it come with a personality?”',
-  '“You’re not tall, Bagas. You’re just loud.”',
-  '“Even the vending machine likes me more than you.”',
-  '“She’s not a trophy, Bagas.”',
-  '“Is that your final form?”',
-  '“Your hair gel has more confidence than you.”',
-];
-const TAUNTS = [
-  'Ha! YOU? Talking to HER?',
-  'I’ve got a car. Well. My mom’s car.',
-  'Everyone says I’m the coolest guy in school!',
-  'Why are you still standing?!',
-  'S-stop looking at me like that…',
-  'Whatever, nerd!',
-];
+/* ------------------------------------------------------------ the bullies */
+export const FOES = {
+  bagas: {
+    name: 'BAGAS', portrait: './art/bagas.webp', conf: 45, dmg: 4, speed: 1,
+    patterns: ['rain', 'sides', 'balls', 'wall', 'homing', 'spotlight'],
+    words: ['LOSER', 'NERD', 'HA!', 'WEAK', 'LOL', 'NOOB', 'CRINGE'],
+    intro: (c) => `* Bagas blocks the way out. He wants ${c} for himself.`,
+    opener: 'She’s MINE, nerd. Get lost.',
+    taunts: ['Ha! YOU? Talking to HER?', 'I’ve got a car. Well. My mom’s car.', 'Everyone says I’m the coolest guy in school!', 'Why are you still standing?!', 'Dodge THIS!', 'Whatever, nerd!'],
+    soft: '…Nobody’s ever been nice to me before.',
+    comebacks: ['“Nice jacket. Did it come with a personality?”', '“You’re not tall, Bagas. You’re just loud.”', '“Even the vending machine likes me more than you.”', '“She’s not a trophy, Bagas.”', '“Is that your final form?”', '“Your hair gel has more confidence than you.”'],
+    check: (s) => `* BAGAS — CONFIDENCE ${s}. Thinks he’s cool. Is secretly scared of cats.`,
+    acts: [
+      { label: 'Stand tall', conf: 4, mercy: 15, trait: 'bravery', text: '* You stand tall and look him right in the eye. Bagas takes a step back.' },
+      { label: 'Compliment him', mercy: 22, trait: 'kindness', text: '* You tell Bagas his hair looks great. He… was not ready for that.', reply: 'W-what?! …Really?' },
+      { label: 'Make her laugh', mercy: 15, trait: 'integrity', text: '* You tell a terrible bakso joke. She laughs so hard she snorts. Bagas looks lost.' },
+      { label: 'Ignore him', conf: 3, mercy: 10, trait: 'patience', text: '* You ignore Bagas and check your phone. He HATES being ignored.', reply: 'HEY! Look at me!' },
+    ],
+    spare: (me) => `…You’re alright, ${me}. Treat her well.`,
+    beaten: 'I-I’m telling my mom!!',
+  },
+  kevin: {
+    name: 'KEVIN', portrait: './art/kevin.webp', conf: 55, dmg: 4, speed: 1.15,
+    patterns: ['balls', 'dunk', 'sides', 'homing', 'spotlight', 'rain'],
+    words: ['AIRBALL', 'BENCH', 'SWISH', 'BRICK', 'L', 'TRASH'],
+    intro: (c) => `* Kevin, Bagas’s cousin, is spinning a basketball in front of ${c}.`,
+    opener: 'You embarrassed my cousin. Now I embarrass YOU.',
+    taunts: ['I’m the captain. You’re the BENCH.', 'Catch! …Oh wait, you can’t.', 'She only likes winners.', 'I’ve never missed a dunk in my life!', 'Full-court PRESS!', 'Bagas said you were soft…'],
+    soft: '…Bagas said you were actually cool. Ugh. Maybe he’s right.',
+    comebacks: ['“You spin the ball because you can’t shoot it.”', '“Captain? Of the BENCH?”', '“My grandma dunks higher than you.”', '“Number 23 doesn’t make you famous, Kevin.”', '“Even Bagas gave up. Take the hint.”', '“Nice headband. Holding your ego in?”'],
+    check: (s) => `* KEVIN — CONFIDENCE ${s}. Basketball captain. Has never lost a game. Has never been told no.`,
+    acts: [
+      { label: 'Free-throw duel', conf: 5, mercy: 18, trait: 'bravery', text: '* You challenge Kevin to free throws. You sink one. He bricks his. The crowd gasps.', reply: 'That was LUCK!' },
+      { label: 'Praise his skills', mercy: 20, trait: 'kindness', text: '* You tell Kevin he really is good at basketball. He didn’t expect that from you.' },
+      { label: 'Talk about Bagas', mercy: 25, trait: 'integrity', text: '* You tell Kevin you and Bagas made peace. Kevin hesitates, ball still spinning.', reply: '…He said that?' },
+      { label: 'Pass the ball', mercy: 12, conf: 3, trait: 'justice', text: '* You steal the ball and pass it to her. She shoots… and scores! Kevin’s jaw drops.' },
+    ],
+    spare: (me) => `Fine. You win, ${me}. Don’t tell the team.`,
+    beaten: 'This game doesn’t COUNT!!',
+  },
+  bagas2: {
+    name: 'BAGAS ★ MAX', portrait: './art/bagas.webp', conf: 70, dmg: 5, speed: 1.25, finale: true, max: true,
+    patterns: ['spotlight', 'spiral', 'wall', 'homing', 'gel', 'balls', 'rain'],
+    words: ['MINE', 'LOSER', 'PROM', 'HA!', 'MAX', 'GEL'],
+    intro: (c) => `* On the rooftop at sunset, Bagas is back. His hair is taller. Much taller. ${c} looks worried.`,
+    opener: 'Prom is TOMORROW. This time I won’t hold back.',
+    taunts: ['Did you think it was OVER?!', 'Hair gel… MAXIMUM!', 'I trained for this. Mostly in the mirror.', 'Look at my hair. LOOK AT IT.', 'You can’t dodge forever!', 'She’ll see who’s stronger!'],
+    soft: '…Why do you keep being nice to me? Even now?',
+    comebacks: ['“Your hair is a fire hazard, Bagas.”', '“Round two? I thought you went home to your mom.”', '“You lost to a nerd. Twice is a habit.”', '“That gel can’t hold up your ego.”', '“She’s not a prize. She’s a person.”', '“Max hair. Minimum brain.”'],
+    check: (s) => `* BAGAS ★ MAX — CONFIDENCE ${s}. Used an entire tub of hair gel. Wants to win at any cost.`,
+    acts: [
+      { label: 'Stand tall', conf: 5, mercy: 12, trait: 'bravery', text: '* You stand tall. Your heart doesn’t shake this time.' },
+      { label: 'Remind him', mercy: 25, trait: 'integrity', text: '* You remind him what he said last time: “Treat her well.” His eyes start to water.', reply: '…I did say that.' },
+      { label: 'Offer friendship', mercy: 22, trait: 'kindness', text: '* You hold out your hand. “Come to prom with the squad, Bagas. As a friend.”', reply: 'A… friend?' },
+      { label: 'Wipe off the gel', conf: 8, mercy: 8, trait: 'perseverance', text: '* You throw a wet towel at his hair. It sizzles. He shrinks two centimetres.' },
+    ],
+    phase2: { at: 35, line: 'You think you can beat me TWICE?! HAIR GEL… OVERDRIVE!!', speed: 1.5 },
+    spare: (me) => `…Okay. You win, ${me}. Can I… still come to prom? With the squad?`,
+    beaten: 'MY HAIR!! I’M TELLING MY MOM. AND MY DAD!!',
+  },
+};
+
+/** what your SOUL does in battle */
+const PERKS = {
+  determination: 'If your HP hits 0 once, you get right back up.',
+  bravery: 'Your comebacks hit harder.',
+  justice: 'Perfect comebacks can be critical hits.',
+  kindness: 'Being nice to them works better.',
+  patience: 'Their attacks are a little slower.',
+  integrity: 'You packed two extra bowls of bakso.',
+  perseverance: 'You have more HP.',
+};
 
 /**
- * opts: { me, crush, portrait, muted, onTrait(trait) }
- * resolves 'spared', 'won' (he ran off) or 'fled'
+ * opts: { me, crush, foe (key of FOES), lv, soul, soulName, soulCol, muted, onTrait(trait) }
+ * resolves 'spared', 'won' (they ran off) or 'fled'
  */
 export function battle(opts) {
-  const { me, crush, portrait, onTrait = () => {} } = opts;
-  const music = new BattleMusic(!!opts.muted);
+  const { me, crush, onTrait = () => {} } = opts;
+  const F = FOES[opts.foe || 'bagas'];
+  const soul = opts.soul || 'determination';
+  const music = new BattleMusic(!!opts.muted, !!F.finale);
+  const lv = opts.lv || 1;
   const root = document.createElement('div');
-  root.className = 'battle';
+  root.className = 'battle' + (F.max ? ' max' : '');
   root.innerHTML = `
-    <div class="bt-enemy"><img class="bt-foe" alt="Bagas" src="${portrait}"><p class="bt-bubble" hidden></p></div>
+    <div class="bt-enemy"><img class="bt-foe" alt="${F.name}" src="${F.portrait}"><p class="bt-bubble" hidden></p></div>
     <div class="bt-meters">
-      <span>BAGAS</span>
+      <span class="bt-name">${F.name}</span>
       <span class="bt-m">CONFIDENCE <i class="bt-conf"><b></b></i></span>
       <span class="bt-m">MERCY <i class="bt-mercy"><b></b></i></span>
     </div>
     <div class="bt-box"><p class="bt-text"></p><div class="bt-sub"></div><canvas class="bt-arena"></canvas></div>
-    <div class="bt-stats"><b>${me.toUpperCase()}</b><span>LV 17</span><span>HP</span><i class="bt-hp"><b></b></i><span class="bt-hpn"></span></div>
+    <div class="bt-stats"><b>${me.toUpperCase()}</b><span>LV ${lv}</span><span>HP</span><i class="bt-hp"><b></b></i><span class="bt-hpn"></span><span class="bt-soul" style="color:${opts.soulCol || '#ff2a3a'}">♥ ${opts.soulName || 'DETERMINATION'}</span></div>
     <div class="bt-menu">
       <button type="button" data-a="fight"><span>⚔</span>COMEBACK</button>
       <button type="button" data-a="act"><span>💬</span>ACT</button>
-      <button type="button" data-a="item"><span>🍜</span>BAKSO</button>
+      <button type="button" data-a="item"><span>🍜</span>ITEM</button>
       <button type="button" data-a="mercy"><span>✋</span>MERCY</button>
     </div>`;
   document.body.append(root);
@@ -163,20 +229,26 @@ export function battle(opts) {
   const foe = q('.bt-foe'), bubble = q('.bt-bubble');
   const menuBtns = [...root.querySelectorAll('.bt-menu button')];
   const ctx = arena.getContext('2d');
+  const heartCol = opts.soulCol || '#ff2a3a';
 
-  const s = { hp: 20, maxHp: 20, conf: 30, mercy: 0, bakso: 3, turn: 0 };
+  const maxHp = 20 + (lv - 1) * 4 + (soul === 'perseverance' ? 8 : 0);
+  const s = {
+    hp: maxHp, conf: F.conf, mercy: 0, turn: 0, phased: false, speed: F.speed * (soul === 'patience' ? 0.85 : 1),
+    revive: soul === 'determination', shield: false,
+    items: { Bakso: 3 + (soul === 'integrity' ? 2 : 0), 'Iced Milo': 2, 'Teddy bear': 1 },
+  };
   const meters = () => {
-    q('.bt-conf b').style.width = `${(Math.max(0, s.conf) / 30) * 100}%`;
+    q('.bt-conf b').style.width = `${(Math.max(0, s.conf) / F.conf) * 100}%`;
     q('.bt-mercy b').style.width = `${Math.min(100, s.mercy)}%`;
     q('.bt-mercy').classList.toggle('full', s.mercy >= 100);
-    q('.bt-hp b').style.width = `${(Math.max(0, s.hp) / s.maxHp) * 100}%`;
-    q('.bt-hpn').textContent = `${Math.max(0, s.hp)} / ${s.maxHp}`;
+    q('.bt-hp b').style.width = `${(Math.max(0, s.hp) / maxHp) * 100}%`;
+    q('.bt-hpn').textContent = `${Math.max(0, s.hp)} / ${maxHp}`;
   };
   meters();
 
   /* ---- input ---- */
   const held = new Set();
-  let onPress = null; // what the confirm / back / arrow keys do right now
+  let onPress = null;
   const key = (e) => {
     const k = e.key.toLowerCase();
     e.stopPropagation();
@@ -190,7 +262,6 @@ export function battle(opts) {
   window.addEventListener('keydown', key, true);
   window.addEventListener('keyup', keyUp, true);
 
-  /** type a line into the box; resolves when the player confirms */
   const type = (line) => new Promise((resolve) => {
     sub.innerHTML = '';
     textEl.textContent = '';
@@ -200,7 +271,7 @@ export function battle(opts) {
       textEl.textContent = line.slice(0, i);
       if (i % 3 === 0) music.blip();
       if (i >= line.length) { clearInterval(tick); done = true; }
-    }, reduced ? 4 : 28);
+    }, reduced ? 4 : 26);
     const go = () => {
       if (!done) { clearInterval(tick); textEl.textContent = line; done = true; return; }
       onPress = null; box.removeEventListener('click', tap); resolve();
@@ -215,8 +286,6 @@ export function battle(opts) {
     await wait(reduced ? 500 : ms);
     bubble.hidden = true;
   };
-
-  /** pick one of the four big buttons */
   const menu = () => new Promise((resolve) => {
     let sel = 0;
     const paint = () => menuBtns.forEach((b, i) => b.classList.toggle('sel', i === sel));
@@ -230,7 +299,6 @@ export function battle(opts) {
       if (a === 'ok') pick(sel);
     };
   });
-  /** a list of options inside the box; resolves an index, or -1 for back */
   const list = (opts2) => new Promise((resolve) => {
     let sel = 0;
     textEl.textContent = '';
@@ -263,7 +331,8 @@ export function battle(opts) {
     textEl.textContent = '';
     box.classList.add('aim');
     const W = (arena.width = box.clientWidth * 2), H = (arena.height = box.clientHeight * 2);
-    const t0 = performance.now(), dur = 1300;
+    const t0 = performance.now(), dur = F.max ? 1000 : 1200;
+    const zone = soul === 'justice' ? 0.12 : 0.08;
     let stopped = false;
     const finish = (x) => { if (stopped) return; stopped = true; onPress = null; arena.onpointerdown = null; box.classList.remove('aim'); resolve(x); };
     onPress = (a) => { if (a === 'ok') finish(Math.min(1, (performance.now() - t0) / dur)); };
@@ -274,7 +343,7 @@ export function battle(opts) {
       if (k >= 1) { finish(1); return; }
       ctx.clearRect(0, 0, W, H);
       const g = ctx.createLinearGradient(0, 0, W, 0);
-      g.addColorStop(0, '#203060'); g.addColorStop(0.42, '#3a6ab0'); g.addColorStop(0.5, '#ffe14d'); g.addColorStop(0.58, '#3a6ab0'); g.addColorStop(1, '#203060');
+      g.addColorStop(0, '#203060'); g.addColorStop(0.5 - zone, '#3a6ab0'); g.addColorStop(0.5, '#ffe14d'); g.addColorStop(0.5 + zone, '#3a6ab0'); g.addColorStop(1, '#203060');
       ctx.fillStyle = g; ctx.fillRect(20, H * 0.3, W - 40, H * 0.4);
       ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.strokeRect(20, H * 0.3, W - 40, H * 0.4);
       ctx.fillStyle = '#fff'; ctx.fillRect(20 + (W - 40) * k - 6, H * 0.2, 12, H * 0.6);
@@ -285,22 +354,27 @@ export function battle(opts) {
     draw();
   });
 
-  /** his turn: dodge with your heart inside the box for a few seconds */
+  /** their turn: dodge with your heart inside the box */
   const dodge = (pattern, seconds) => new Promise((resolve) => {
     box.classList.add('arena');
     textEl.textContent = '';
     setTimeout(() => {
       const W = (arena.width = box.clientWidth), H = (arena.height = box.clientHeight);
-      const heart = { x: W / 2, y: H / 2, r: 8 };
-      let bullets = [], spawn = 0, invul = 0, last = performance.now(), t = 0, dead = false, tx = null, ty = null;
-      const speed = 150;
+      const heart = { x: W / 2, y: H / 2 };
+      let bullets = [], beams = [], spawn = 0, invul = 0, last = performance.now(), t = 0, dead = false, tx = null, ty = null, ang = 0;
+      const speed = 155;
       arena.onpointermove = arena.onpointerdown = (e) => { const r = arena.getBoundingClientRect(); tx = ((e.clientX - r.left) / r.width) * W; ty = ((e.clientY - r.top) / r.height) * H; };
-      const word = () => WORDS[Math.floor(Math.random() * WORDS.length)];
-      const hard = Math.min(1.6, 1 + s.turn * 0.12);
+      const word = () => F.words[Math.floor(Math.random() * F.words.length)];
+      const hard = Math.min(2, s.speed * (1 + s.turn * 0.07));
+      const hurt = () => {
+        if (s.shield) { s.shield = false; invul = 0.9; music.blip(); return; }
+        s.hp -= F.dmg; invul = 0.75; meters(); music.hit();
+        box.classList.remove('hurt'); void box.offsetWidth; box.classList.add('hurt');
+        if (s.hp <= 0) dead = true;
+      };
       const frame = (now) => {
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now; t += dt;
-        // move the heart
         let dx = 0, dy = 0;
         if (held.has('arrowleft') || held.has('a')) dx -= 1;
         if (held.has('arrowright') || held.has('d')) dx += 1;
@@ -309,44 +383,66 @@ export function battle(opts) {
         if (tx !== null && !dx && !dy) { const ax = tx - heart.x, ay = ty - heart.y, l = Math.hypot(ax, ay); if (l > 3) { dx = ax / l; dy = ay / l; } }
         heart.x = Math.max(10, Math.min(W - 10, heart.x + dx * speed * dt));
         heart.y = Math.max(10, Math.min(H - 10, heart.y + dy * speed * dt));
-        // spawn his attacks
+        // spawn the attacks
         spawn -= dt;
         if (spawn <= 0 && t < seconds - 0.6) {
-          if (pattern === 0) { bullets.push({ x: 20 + Math.random() * (W - 40), y: -10, vx: 0, vy: (90 + Math.random() * 60) * hard, txt: word() }); spawn = 0.42 / hard; }
-          else if (pattern === 1) { const L = Math.random() < 0.5; bullets.push({ x: L ? -30 : W + 30, y: 15 + Math.random() * (H - 30), vx: (L ? 1 : -1) * 130 * hard, vy: 0, txt: word() }); spawn = 0.55 / hard; }
-          else if (pattern === 2) { bullets.push({ x: -12, y: 10 + Math.random() * 30, vx: (90 + Math.random() * 60) * hard, vy: 0, ball: true, g: 380 }); spawn = 0.75 / hard; }
-          else if (pattern === 3) {
-            const gap = 30 + Math.random() * (W - 110), letters = 'SHE’S MINE'.repeat(3);
-            for (let x = 8, n = 0; x < W - 8; x += 18, n++) if (x < gap || x > gap + 62) bullets.push({ x, y: -12, vx: 0, vy: 70 * hard, txt: letters[n % letters.length] || '!' });
-            spawn = 1.5 / hard;
-          } else { if (Math.random() < 0.5) bullets.push({ x: 20 + Math.random() * (W - 40), y: -10, vx: 0, vy: 120 * hard, txt: word() }); else bullets.push({ x: -12, y: 20, vx: 120 * hard, vy: 0, ball: true, g: 380 }); spawn = 0.4 / hard; }
+          const p = pattern;
+          if (p === 'rain') { bullets.push({ x: 20 + Math.random() * (W - 40), y: -10, vx: 0, vy: (90 + Math.random() * 60) * hard, txt: word() }); spawn = 0.38 / hard; }
+          else if (p === 'sides') { const L = Math.random() < 0.5; bullets.push({ x: L ? -30 : W + 30, y: 15 + Math.random() * (H - 30), vx: (L ? 1 : -1) * 130 * hard, vy: 0, txt: word() }); spawn = 0.5 / hard; }
+          else if (p === 'balls') { bullets.push({ x: -12, y: 10 + Math.random() * 30, vx: (90 + Math.random() * 70) * hard, vy: 0, ball: 11, g: 380 }); spawn = 0.65 / hard; }
+          else if (p === 'wall') {
+            const gap = 30 + Math.random() * (W - 110), letters = (F.words[0] + ' ').repeat(9);
+            for (let x = 8, n = 0; x < W - 8; x += 18, n++) if (x < gap || x > gap + 58) bullets.push({ x, y: -12, vx: 0, vy: 75 * hard, txt: letters[n % letters.length] === ' ' ? '!' : letters[n % letters.length] });
+            spawn = 1.35 / hard;
+          } else if (p === 'homing') {
+            const side = Math.floor(Math.random() * 4);
+            const x = side === 0 ? -20 : side === 1 ? W + 20 : Math.random() * W, y = side === 2 ? -15 : side === 3 ? H + 15 : Math.random() * H;
+            bullets.push({ x, y, vx: 0, vy: 0, txt: word(), home: 70 * hard, life: 3.2 }); spawn = 0.7 / hard;
+          } else if (p === 'spotlight') {
+            const n = F.max ? 2 : 1;
+            for (let k = 0; k < n; k++) { const w = 38 + Math.random() * 24; beams.push({ x: Math.random() * (W - w), w, t: 0 }); }
+            spawn = 1.1 / hard;
+            if (Math.random() < 0.5) bullets.push({ x: 20 + Math.random() * (W - 40), y: -10, vx: 0, vy: 110 * hard, txt: word() });
+          } else if (p === 'spiral') {
+            ang += 0.55;
+            for (let k = 0; k < 3; k++) { const a = ang + (k * Math.PI * 2) / 3; bullets.push({ x: W / 2, y: 18, vx: Math.cos(a) * 95 * hard, vy: Math.abs(Math.sin(a)) * 95 * hard + 20, txt: '✦' }); }
+            spawn = 0.22 / hard;
+          } else if (p === 'dunk') {
+            bullets.push({ x: 25 + Math.random() * (W - 50), y: -24, vx: 0, vy: 40, g: 900, ball: 18, dunk: true }); spawn = 0.9 / hard;
+          } else if (p === 'gel') {
+            bullets.push({ x: 20 + Math.random() * (W - 40), y: -10, vx: (Math.random() - 0.5) * 40, vy: 60 * hard, txt: '●', gel: true }); spawn = 0.3 / hard;
+          }
         }
-        // move and draw
         ctx.clearRect(0, 0, W, H);
         invul -= dt;
-        bullets = bullets.filter((b) => b.x > -60 && b.x < W + 60 && b.y < H + 40);
+        // warning beams, then the spotlight
+        beams = beams.filter((b) => (b.t += dt) < 1.25);
+        for (const b of beams) {
+          if (b.t < 0.75) { ctx.fillStyle = `rgba(255,60,80,${0.15 + 0.15 * Math.sin(b.t * 30)})`; ctx.fillRect(b.x, 0, b.w, H); }
+          else { ctx.fillStyle = 'rgba(255,250,220,0.9)'; ctx.fillRect(b.x, 0, b.w, H); if (invul <= 0 && heart.x > b.x - 4 && heart.x < b.x + b.w + 4) hurt(); }
+        }
+        bullets = bullets.filter((b) => b.x > -70 && b.x < W + 70 && b.y < H + 50 && b.y > -80 && (b.life === undefined || (b.life -= dt) > 0));
         for (const b of bullets) {
-          if (b.ball) { b.vy += b.g * dt; if (b.y > H - 12 && b.vy > 0) b.vy *= -0.82; }
+          if (b.home) { const ax = heart.x - b.x, ay = heart.y - b.y, l = Math.hypot(ax, ay) || 1; b.vx += (ax / l) * b.home * dt * 2; b.vy += (ay / l) * b.home * dt * 2; const v = Math.hypot(b.vx, b.vy), mx = b.home * 1.4; if (v > mx) { b.vx *= mx / v; b.vy *= mx / v; } }
+          if (b.g) { b.vy += b.g * dt; if (b.y > H - b.ball && b.vy > 0) { b.vy *= b.dunk ? -0.55 : -0.82; if (b.dunk) b.vx = (Math.random() - 0.5) * 220; } }
           b.x += b.vx * dt; b.y += b.vy * dt;
           let hw, hh;
           if (b.ball) {
-            ctx.fillStyle = '#ff8a1a'; ctx.beginPath(); ctx.arc(b.x, b.y, 11, 0, Math.PI * 2); ctx.fill();
-            ctx.strokeStyle = '#7a3a10'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(b.x - 11, b.y); ctx.lineTo(b.x + 11, b.y); ctx.moveTo(b.x, b.y - 11); ctx.lineTo(b.x, b.y + 11); ctx.stroke();
-            hw = hh = 9;
+            const r = b.ball;
+            ctx.fillStyle = '#ff8a1a'; ctx.beginPath(); ctx.arc(b.x, b.y, r, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#7a3a10'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(b.x - r, b.y); ctx.lineTo(b.x + r, b.y); ctx.moveTo(b.x, b.y - r); ctx.lineTo(b.x, b.y + r); ctx.stroke();
+            hw = hh = r - 2;
           } else {
-            ctx.font = 'bold 15px DotGothic16, monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#ffffff'; ctx.fillText(b.txt, b.x, b.y);
+            ctx.font = `bold ${b.gel ? 18 : 15}px DotGothic16, monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillStyle = b.gel ? '#7ae0ff' : b.home ? '#ffb0c0' : '#ffffff'; ctx.fillText(b.txt, b.x, b.y);
             hw = ctx.measureText(b.txt).width / 2; hh = 7;
           }
-          if (invul <= 0 && Math.abs(b.x - heart.x) < hw + 5 && Math.abs(b.y - heart.y) < hh + 5) {
-            s.hp -= 3; invul = 0.9; meters(); music.hit();
-            box.classList.remove('hurt'); void box.offsetWidth; box.classList.add('hurt');
-            if (s.hp <= 0) dead = true;
-          }
+          if (invul <= 0 && Math.abs(b.x - heart.x) < hw + 5 && Math.abs(b.y - heart.y) < hh + 5) hurt();
         }
-        // the heart (your soul)
+        // your heart, in the colour of your SOUL
         if (invul <= 0 || Math.floor(t * 14) % 2) {
-          ctx.save(); ctx.translate(heart.x, heart.y); ctx.fillStyle = '#ff2a3a';
+          ctx.save(); ctx.translate(heart.x, heart.y); ctx.fillStyle = heartCol;
+          if (s.shield) { ctx.strokeStyle = '#ffd98a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI * 2); ctx.stroke(); }
           ctx.beginPath(); ctx.moveTo(0, 7); ctx.bezierCurveTo(-11, -1, -8, -10, 0, -4); ctx.bezierCurveTo(8, -10, 11, -1, 0, 7); ctx.fill(); ctx.restore();
         }
         if (dead || t >= seconds) {
@@ -363,54 +459,85 @@ export function battle(opts) {
   });
 
   const shakeFoe = () => { foe.classList.remove('shake'); void foe.offsetWidth; foe.classList.add('shake'); };
+  const kind = (n) => Math.round(n * (soul === 'kindness' ? 1.3 : 1));
 
   return (async () => {
     music.start();
     await wait(400);
     root.classList.add('in');
-    await type(`* Bagas blocks your way. He wants ${crush} for himself.`);
-    await say('She’s MINE, nerd. Get lost.');
+    await type(F.intro(crush));
+    await say(F.opener);
+    await type(`* Your SOUL shines: ${opts.soulName || 'DETERMINATION'}. ${PERKS[soul]}`);
     let result = null;
     while (!result) {
-      await type(s.mercy >= 100 ? '* Bagas doesn’t want to fight anymore.' : s.conf <= 10 ? '* Bagas is sweating. A lot.' : `* ${crush} is watching nervously.`);
+      await type(s.mercy >= 100 ? `* ${F.name} doesn’t want to fight anymore.` : s.conf <= F.conf * 0.25 ? `* ${F.name} is sweating. A lot.` : `* ${crush} is watching nervously.`);
       const a = await menu();
       if (a === 'fight') {
         const x = await timing();
-        const acc = 1 - Math.min(1, Math.abs(x - 0.5) * 2);
-        const dmg = acc < 0.1 ? 0 : Math.round(3 + acc * 9);
-        await type(`* You: ${COMEBACKS[s.turn % COMEBACKS.length]}`);
-        if (dmg) { s.conf -= dmg; shakeFoe(); music.hit(); meters(); onTrait('justice'); await type(`* It's super effective! Bagas loses ${dmg} confidence.`); }
-        else await type('* You mumbled it. Bagas didn’t hear you.');
-        if (s.conf <= 0) { await say('I-I’m telling my mom!!', 1800); foe.classList.add('run'); await type('* Bagas ran away. You won without throwing a single punch.'); result = 'won'; break; }
+        const off = Math.abs(x - 0.5);
+        const acc = 1 - Math.min(1, off * 2);
+        let dmg = acc < 0.1 ? 0 : Math.round(3 + acc * 9 + (soul === 'bravery' ? 3 : 0));
+        const crit = soul === 'justice' && off < 0.06;
+        if (crit) dmg = Math.round(dmg * 1.6);
+        await type(`* You: ${F.comebacks[s.turn % F.comebacks.length]}`);
+        if (dmg) { s.conf -= dmg; shakeFoe(); music.hit(); meters(); onTrait('justice'); await type(`* ${crit ? 'CRITICAL! ' : ''}It's super effective! ${F.name} loses ${dmg} confidence.`); }
+        else await type('* You mumbled it. Nobody heard you.');
       } else if (a === 'act') {
-        const i = await list(['Check', 'Stand tall', 'Compliment him', `Make ${crush} laugh`]);
+        const i = await list(['Check', ...F.acts.map((x) => x.label)]);
         if (i < 0) continue;
-        if (i === 0) { onTrait('patience'); await type(`* BAGAS — CONFIDENCE ${Math.max(0, s.conf)}/30. Thinks he’s cool. Is secretly scared of cats.`); continue; }
-        if (i === 1) { s.conf -= 4; s.mercy += 25; onTrait('bravery'); shakeFoe(); meters(); await type('* You stand tall and look him right in the eye. Bagas takes a step back.'); }
-        if (i === 2) { s.mercy += 35; onTrait('kindness'); meters(); await type('* You tell Bagas his hair looks great. He… was not ready for that.'); await say('W-what?! …Really?', 1300); }
-        if (i === 3) { s.mercy += 20; onTrait('integrity'); meters(); await type(`* You tell a terrible bakso joke. ${crush} laughs so hard she snorts. Bagas looks lost.`); }
+        if (i === 0) { onTrait('patience'); await type(F.check(`${Math.max(0, s.conf)}/${F.conf}`)); continue; }
+        const A = F.acts[i - 1];
+        s.mercy += kind(A.mercy || 0); s.conf -= A.conf || 0;
+        if (A.conf) shakeFoe();
+        onTrait(A.trait); meters();
+        await type(A.text);
+        if (A.reply) await say(A.reply, 1300);
       } else if (a === 'item') {
-        if (s.bakso <= 0) { await type('* The bakso is all gone. Hamzah ate the last one.'); continue; }
-        s.bakso--; s.hp = s.maxHp; meters(); onTrait('perseverance');
-        await type(`* You eat a bowl of bakso. Extra meatballs. HP fully restored! (${s.bakso} left)`);
+        const names = Object.keys(s.items);
+        const i = await list(names.map((n) => `${n} ×${s.items[n]}`));
+        if (i < 0) continue;
+        const n = names[i];
+        if (!s.items[n]) { await type(`* No ${n} left. Hamzah ate it.`); continue; }
+        s.items[n]--;
+        if (n === 'Bakso') { s.hp = maxHp; onTrait('perseverance'); await type('* You eat a bowl of bakso. Extra meatballs. HP fully restored!'); }
+        else if (n === 'Iced Milo') { s.hp = Math.min(maxHp, s.hp + 10); await type('* You drink an iced Milo. Chocolatey courage. +10 HP.'); }
+        else { s.shield = true; onTrait('kindness'); await type(`* You hug the teddy bear. It will block the next hit for you.`); }
+        meters();
       } else if (a === 'mercy') {
-        const i = await list([s.mercy >= 100 ? 'Spare' : 'Spare', 'Run away']);
+        const i = await list(['Spare', 'Run away']);
         if (i < 0) continue;
         if (i === 0) {
-          if (s.mercy >= 100) { onTrait('kindness'); await say(`…You’re alright, ${me}. Treat her well.`, 2200); await type('* You spared Bagas. He walks away… and almost smiles.'); result = 'spared'; break; }
-          await type('* Bagas isn’t ready to back down yet. (Try ACT to win him over.)');
-        } else { await type('* You ran away. Behind you, Bagas laughs.'); result = 'fled'; break; }
+          if (s.mercy >= 100) { onTrait('kindness'); await say(F.spare(me), 2300); await type(`* You spared ${F.name}. They walk away… and almost smile.`); result = 'spared'; break; }
+          await type(`* ${F.name} isn’t ready to back down. (ACT fills MERCY.)`);
+        } else { await type('* You ran away. Behind you, someone laughs.'); result = 'fled'; break; }
       }
-      // his turn
-      await say(s.mercy >= 70 ? '…Nobody’s ever been nice to me before.' : TAUNTS[s.turn % TAUNTS.length]);
-      const r = await dodge(s.turn % 5, 5.2);
+      if (s.conf <= 0) { await say(F.beaten, 1900); foe.classList.add('run'); await type(`* ${F.name} ran away. You won without throwing a single punch.`); result = 'won'; break; }
+      // the second phase
+      if (F.phase2 && !s.phased && s.conf <= F.phase2.at) {
+        s.phased = true;
+        s.speed = F.phase2.speed * (soul === 'patience' ? 0.85 : 1);
+        root.classList.add('overdrive');
+        music.power();
+        await say(F.phase2.line, 2200);
+        s.conf = Math.min(F.conf, s.conf + 15); meters();
+        await type(`* ${F.name} powered up! His confidence went back up. His attacks are faster now!`);
+      }
+      // their turn
+      await say(s.mercy >= 70 ? F.soft : F.taunts[s.turn % F.taunts.length]);
+      const pat = F.patterns[(s.turn + (s.phased ? 2 : 0)) % F.patterns.length];
+      const r = await dodge(pat, F.max ? 6.5 : 6);
       s.turn++;
       if (r === 'dead') {
+        if (s.revive) {
+          s.revive = false; s.hp = maxHp; meters(); onTrait('determination');
+          await type(`* Your HP hit 0… but your SOUL refuses to break. You stand back up!`);
+          continue;
+        }
         await type(`* Your heart is aching… but ${crush} is still watching. Don’t give up, ${me}!`);
         const k = await list(['Try again', 'Give up']);
-        if (k === 1) { await type('* You walk away. Bagas laughs. It stings.'); result = 'fled'; break; }
+        if (k === 1) { await type('* You walk away. It stings.'); result = 'fled'; break; }
         onTrait('determination');
-        s.hp = s.maxHp; meters();
+        s.hp = maxHp; meters();
         await type('* You get back up. Your heart burns brighter than ever.');
       }
     }

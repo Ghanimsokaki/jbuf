@@ -854,3 +854,9 @@ body.crazy .logo { -webkit-text-stroke-color: #a0103a; }
 .soul-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px !important; }
 .soul-chips span { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--c); color: var(--c); }
 .bt-stats > b { background: none; display: inline; height: auto; }
+.bt-soul { font-size: 0.85rem; letter-spacing: 0.06em; }
+.battle.max .bt-foe { filter: saturate(1.5) contrast(1.1) drop-shadow(0 0 26px rgba(255, 30, 60, 0.85)); }
+.battle.max .bt-name { color: #ff4a5a; text-shadow: 0 0 8px #ff2040; }
+.battle.overdrive { animation: bt-pulse 1.2s ease-in-out infinite; }
+.battle.overdrive .bt-foe { animation: bt-bob 0.5s ease-in-out infinite; }
+@keyframes bt-pulse { 50% { background: radial-gradient(60% 40% at 50% 28%, #5a0a1e, #000 70%); } }
